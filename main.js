@@ -6,9 +6,9 @@ function createWindow() {
     fullscreen: true,     // Tela cheia
     frame: false,         // Remove a barra de título e bordas
     webPreferences: {
-      nodeIntegration: true, // ou use contextIsolation: false, se apropriado
-      preload: path.join(__dirname, 'preload.js'), // Opcional, se usar preload
-      nodeIntegration: true
+      nodeIntegration: true,
+      contextIsolation: false,
+      enableRemoteModule: true,
     }
   });
 
