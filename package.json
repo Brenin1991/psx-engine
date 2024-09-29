@@ -1,0 +1,23 @@
+{
+  "name": "space-game",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "devDependencies": {
+    "electron": "^25.2.0",
+    "electron-builder": "^24.4.0"
+  },
+  "build": {
+    "appId": "com.redtargetlabs.space-game",
+    "win": {
+      "target": "nsis",
+      "icon": "path/to/icon.ico"
+    }
+  },
+  "dependencies": {
+    "three": "^0.169.0"
+  }
+}
