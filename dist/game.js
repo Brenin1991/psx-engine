@@ -1,6 +1,7 @@
 import * as PSX from './psx-engine-dist.js';
-import { loadPlayer, movePlayer } from './entities/player.js';
-import { loadEnemy, moveEnemy } from './entities/enemy.js';
+import { gameStart as armaInimigoGameStart, gameLoop as armaInimigoGameLoop } from './entities/armaInimigo.js';
+import { gameStart as enemyGameStart, gameLoop as enemyGameLoop } from './entities/enemy.js';
+import { gameStart as playerGameStart, gameLoop as playerGameLoop } from './entities/player.js';
 
 function start() {
   PSX.setGameStart(gameStart);
@@ -10,14 +11,18 @@ function start() {
 
 // Função que será chamada no primeiro frame
 function gameStart() {
-  loadPlayer(); // Carrega o jogador
-  loadEnemy();  // Carrega o inimigo
+  armaInimigoGameStart();
+  enemyGameStart();
+  playerGameStart();
+
 }
 
 // Função que será chamada a cada frame
 function gameLoop() {
-  movePlayer(); // Movimenta o jogador
-  moveEnemy();  // Movimenta o inimigo
+  armaInimigoGameLoop();
+  enemyGameLoop();
+  playerGameLoop();
+
 }
 
 document.addEventListener('DOMContentLoaded', start);

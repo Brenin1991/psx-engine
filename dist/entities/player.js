@@ -1,11 +1,11 @@
 import * as PSX from '../psx-engine-dist.js';
-import Vector3 from '../js/utils.js';
+import Vector3 from "../psx-engine-dist.js";
 
 let playerModel;
 let playerObject;
 const speed = 0.1;
 
-export function loadPlayer() {
+export function gameStart() {
   const scale = new Vector3(0.01, 0.01, 0.01);
   const position = new Vector3(0, 0, 0);
   const rotation = new Vector3(0, Math.PI, 0);
@@ -17,7 +17,7 @@ export function loadPlayer() {
   });
 }
 
-export function movePlayer() {
+export function gameLoop() {
   if (!playerObject) return;
 
   if (PSX.isKeyPressed('w')) {
@@ -35,15 +35,5 @@ export function movePlayer() {
 
   if (PSX.isKeyPressed('m')) {
     PSX.destroy(playerObject);
-  }
-
-  if (PSX.isKeyPressed('n')) {
-    let enemy = PSX.findObjectByName('enemy')
-    console.log(enemy.components.mensagemInimigo());
-  }
-
-  if (PSX.isKeyPressed('r')) {
-    let enemy = PSX.findObjectByName('enemy')
-    enemy.removeComponent('mensagemInimigo');
   }
 }
