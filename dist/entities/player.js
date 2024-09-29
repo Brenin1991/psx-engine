@@ -1,34 +1,49 @@
-import { isKeyPressed, translate } from '../psx-engine-dist.js'; // Importando funções da engine
-import { LoadModelGLB, instantiate } from '../psx-engine-dist.js'; // Funções para carregar e instanciar o modelo
+import * as PSX from '../psx-engine-dist.js';
 import Vector3 from '../js/utils.js';
 
 let playerModel;
-let speed = 0.1;
+let playerObject;
+const speed = 0.1;
 
 export function loadPlayer() {
   const scale = new Vector3(0.01, 0.01, 0.01);
   const position = new Vector3(0, 0, 0);
   const rotation = new Vector3(0, Math.PI, 0);
 
-  LoadModelGLB('f16.glb', scale, position, rotation, (loadedModel) => {
+  PSX.LoadModelGLB('f16.glb', scale, position, rotation, (loadedModel) => {
     playerModel = loadedModel;
-    instantiate(playerModel);
+    playerObject = PSX.instantiate(playerModel, 'player', 'player');
+    console.log(playerObject.getSceneId()); // Acessa o ID
   });
 }
 
 export function movePlayer() {
-  if (!playerModel) return;
+  if (!playerObject) return;
 
-  if (isKeyPressed('w')) {
-    translate(playerModel.position, "y", -speed);
+  if (PSX.isKeyPressed('w')) {
+    PSX.translate(playerObject.model.position, 'y', -speed);
   }
-  if (isKeyPressed('s')) {
-    translate(playerModel.position, "y", speed);
+  if (PSX.isKeyPressed('s')) {
+    PSX.translate(playerObject.model.position, 'y', speed);
   }
-  if (isKeyPressed('a')) {
-    translate(playerModel.position, "x", -speed);
+  if (PSX.isKeyPressed('a')) {
+    PSX.translate(playerObject.model.position, 'x', -speed);
   }
-  if (isKeyPressed('d')) {
-    translate(playerModel.position, "x", speed);
+  if (PSX.isKeyPressed('d')) {
+    PSX.translate(playerObject.model.position, 'x', speed);
+  }
+
+  if (PSX.isKeyPressed('m')) {
+    PSX.destroy(playerObject);
+  }
+
+  if (PSX.isKeyPressed('n')) {
+    let enemy = PSX.findObjectByName('enemy')
+    console.log(enemy.components.mensagemInimigo());
+  }
+
+  if (PSX.isKeyPressed('r')) {
+    let enemy = PSX.findObjectByName('enemy')
+    enemy.removeComponent('mensagemInimigo');
   }
 }

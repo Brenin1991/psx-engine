@@ -8,7 +8,11 @@ let gameLoopFunction = null; // Variável para armazenar o callback do gameLoop
 const modelLoader = new GLTFLoader();
 const keysPressed = {}; // Armazena o estado das teclas pressionadas
 
+let idCounter = 0; // Contador para gerar IDs únicos
+
 let timeMulti = 1;
+
+let sceneObjects = [];
 
 // Inicializa a cena, câmera e renderizador
 export function init() {
@@ -68,9 +72,93 @@ export function isKeyPressed(key) {
 }
 
 // Adiciona um modelo à cena
-export function instantiate(model) {
-  scene.add(model);
+// Adiciona um modelo à cena
+export function instantiate(model, name, type) {
+  idCounter++; // Incrementa o contador para cada nova instância
+
+  let sceneObject = {
+    id: idCounter, // Atribui um ID único
+    name: name,
+    model: model,
+    type: type,
+    components: {}, // Armazena componentes como um objeto
+  
+    // Método para acessar o ID
+    getSceneId: function() {
+      return this.id;
+    },
+  
+    // Método para acessar o nome
+    getSceneName: function() {
+      return this.name;
+    },
+  
+    // Método para adicionar um componente
+    addComponent: function(name, component) {
+      if (typeof component === 'function') {
+        this.components[name] = component.bind(this); // Adiciona o componente como um método
+        console.log(`Componente adicionado: ${name}`);
+      } else {
+        console.log('O componente deve ser uma função.');
+      }
+    },
+  
+    // Método para remover um componente
+    removeComponent: function(name) {
+      if (this.components[name]) {
+        delete this.components[name]; // Remove o componente pelo nome
+        console.log(`Componente removido: ${name}`);
+      } else {
+        console.log('Componente não encontrado.');
+      }
+    }
+  };
+
+  sceneObjects.push(sceneObject);
+  scene.add(sceneObject.model);
+
+  return sceneObject;
 }
+
+export function findObjectById(id) {
+  for (let sceneObject of sceneObjects) {
+    if (sceneObject.id === id) {
+      return sceneObject; // Retorna o objeto se o ID corresponder
+    }
+  }
+  return null; // Retorna null se nenhum objeto for encontrado
+}
+
+// Encontra um objeto na coleção pelo nome
+export function findObjectByName(name) {
+  for (let sceneObject of sceneObjects) {
+    if (sceneObject.name === name) {
+      return sceneObject; // Retorna o objeto se o nome corresponder
+    }
+  }
+  return null; // Retorna null se nenhum objeto for encontrado
+}
+
+
+// Remove um modelo da cena
+export function destroy(sceneObject) {
+  // Verifica se o objeto existe na coleção
+  const index = sceneObjects.indexOf(sceneObject);
+  
+  if (index !== -1) {
+    // Remove o modelo da cena
+    scene.remove(sceneObject.model);
+    
+    // Remove o objeto da coleção
+    sceneObjects.splice(index, 1);
+
+    console.log(`${sceneObject.name} foi removido da cena.`);
+  } else {
+    console.log(`${sceneObject.name} não está na cena.`);
+  }
+}
+
+
 
 // Carrega um modelo GLB
 export function LoadModelGLB(url, scale, position, rotation, callback) {
