@@ -13,7 +13,7 @@ function createWindow() {
   });
 
   // Carregar o arquivo HTML do jogo que está na pasta 'game'
-  win.loadFile('game/index.html').then(() => {
+  win.loadFile('dist/index.html').then(() => {
     win.webContents.openDevTools(); // Abre o console do desenvolvedor
   });
 }

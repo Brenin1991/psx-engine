@@ -7,18 +7,11 @@ let enemies = [];
 
 // Função que será chamada no primeiro frame
 export function gameStart() {
-  const scale = new Vector3(0.01, 0.01, 0.01);
-  const position = new Vector3(5, 0, 0); // Inimigo começa numa posição diferente
-  const rotation = new Vector3(0, Math.PI, 0);
-
-  PSX.LoadModelGLB("f16.glb", scale, position, rotation, (loadedModel) => {
-    enemyModel = loadedModel;
-  });
-
-  // Cria um novo inimigo a cada 2 segundos
-  setInterval(function () {
-    instantiateEnemy();
-  }, 2000);
+    loadModel();
+    // Cria um novo inimigo a cada 2 segundos
+    setInterval(function () {
+        instantiateEnemy();
+    }, 2000);
 }
 
 // Função chamada a cada frame
@@ -26,6 +19,16 @@ export function gameLoop() {
   enemies.forEach((enemy) => {
     moveEnemy(enemy);
   });
+}
+
+function loadModel() {
+    const scale = new Vector3(4, 4, 4);
+    const position = new Vector3(5, 0, 0); // Inimigo começa numa posição diferente
+    const rotation = new Vector3(0, Math.PI, 0);
+
+    PSX.LoadModelGLB("./models/tank.glb", scale, position, rotation, (loadedModel) => {
+        enemyModel = loadedModel;
+    });
 }
 
 // Função que movimenta o inimigo
@@ -53,4 +56,6 @@ function instantiateEnemy() {
 
   // Adiciona o inimigo à lista de inimigos
   enemies.push(enemy);
+
+  console.log(enemy.getSceneId());
 }

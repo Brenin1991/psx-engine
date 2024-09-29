@@ -131,14 +131,23 @@ export function findObjectById(id) {
 }
 
 // Encontra um objeto na coleção pelo nome
-export function findObjectByName(name) {
+export function findObjectByName(name, callback) {
   for (let sceneObject of sceneObjects) {
     if (sceneObject.name === name) {
+      if (callback && typeof callback === 'function') {
+        callback(sceneObject); // Chama o callback passando o objeto encontrado
+      }
       return sceneObject; // Retorna o objeto se o nome corresponder
     }
   }
+  
+  if (callback && typeof callback === 'function') {
+    callback(null); // Chama o callback com null se nenhum objeto for encontrado
+  }
+  
   return null; // Retorna null se nenhum objeto for encontrado
 }
+
 
 
 // Remove um modelo da cena
