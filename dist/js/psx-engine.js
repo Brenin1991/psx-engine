@@ -3,6 +3,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'; // Import
 
 // Variáveis globais do engine
 let scene, camera, renderer;
+let gameStartFunction = null; // Variável para armazenar o callback do gameStart
 let gameLoopFunction = null; // Variável para armazenar o callback do gameLoop
 const modelLoader = new GLTFLoader();
 const keysPressed = {}; // Armazena o estado das teclas pressionadas
@@ -40,6 +41,10 @@ export function init() {
   document.addEventListener('keyup', (event) => {
     keysPressed[event.key.toLowerCase()] = false;
   });
+
+  if(gameStartFunction) {
+    gameStartFunction(); // Chama o loop do jogo a cada frame
+  }
 
   function animate() {
     requestAnimationFrame(animate);
@@ -96,6 +101,10 @@ export function translate(object, axis, value) {
 // Função para definir o gameLoop
 export function setGameLoop(callback) {
   gameLoopFunction = callback; // Define o callback do loop de jogo
+}
+
+export function setGameStart(callback) {
+  gameStartFunction = callback; // Define o callback do loop de jogo
 }
 
 // Retorna a cena, câmera e renderizador (se necessário)
