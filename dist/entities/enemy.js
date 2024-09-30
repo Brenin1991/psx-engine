@@ -1,9 +1,9 @@
 import * as PSX from "../psx-engine-dist.js";
 import Vector3 from "../psx-engine-dist.js";
+import * as gameManager from "./gameManager.js";
 
 let tankModel, helicopterModel;
 let enemies = [];
-let player;
 
 // Função que será chamada no primeiro frame
 export function gameStart() {
@@ -13,22 +13,7 @@ export function gameStart() {
 
 // Função chamada a cada frame
 export function gameLoop() {
-    if(player) {
-        moveEnemies();
-    } else {
-        findPlayer();
-    }
-}
 
-function findPlayer () {
-    PSX.findObjectByName('player', (playerObject) => {
-        if (playerObject) {
-        player = playerObject;
-        console.log('achou o player');
-        } else {
-        console.warn('Player não encontrado');
-        }
-    });
 }
 
 function loadModel() {
@@ -62,36 +47,6 @@ function spawnEnemies() {
       createEnemies(3, "helicopter", 1); // Exemplo: criar 5 inimigos a cada 3 segundos
     }, 8000);
   }
-
-// Função que movimenta o inimigo
-function moveEnemies() {
-  enemies.forEach((enemy, index) => {
-    PSX.translate(enemy.enemy.model.position, "z", enemy.velocity);
-    if (
-        enemy.enemy.model.position.distanceTo(player.model.position) > 30 &&
-        enemy.type != "tank"
-      ) {
-        enemy.enemy.model.lookAt(player.model.position); // Fazer o inimigo olhar para o avião
-      } else {
-        // Se a distância for menor ou igual a 5, o inimigo não seguirá mais o avião
-        // Você pode deixá-lo seguir em linha reta ou congelar a rotação dele
-        // Aqui, ele para de olhar o avião, mantendo a última direção
-      }
-      // enemy.lookAt(null);
-      // Verificar se colidiu com o avião
-      if (enemy.enemy.model.position.distanceTo(player.model.position) < 2) {
-        // Criar explosão e finalizar jogo
-       // createExplosion(enemy.enemy.position);
-       // endGame();
-      }
-
-    // Remover inimigo se sair da tela (se passar do jogador)
-    if (enemy.enemy.model.position.z > player.model.position.z + 10) {
-      PSX.destroy(enemy.enemy);
-      enemies.splice(index, 1);
-    }
-  });
-}
 
 function createEnemies(numEnemies, type, velocity) {
   // Verificar o número atual de inimigos
@@ -138,6 +93,6 @@ function createEnemies(numEnemies, type, velocity) {
     }
 
     const enemyObj = PSX.instantiate(enemy);
-    enemies.push({ enemy: enemyObj, type: type, velocity: velocity });
+    gameManager.addEnemy({ enemy: enemyObj, type: type, velocity: velocity });
   }
 }

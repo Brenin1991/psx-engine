@@ -2,6 +2,7 @@ import * as PSX from "../psx-engine-dist.js";
 import Vector3 from "../psx-engine-dist.js";
 import { inputs } from "./inputs.js";
 import { shoot } from "./playerShoot.js";
+import * as gameManager from "./gameManager.js";
 
 let playerModel;
 let playerObject;
@@ -28,6 +29,7 @@ function loadModel() {
       playerModel = loadedModel;
       playerObject = PSX.instantiate(playerModel, "player", "player");
       playerObject.addComponent('playerShoot', playerShoot);
+      gameManager.setUpPlayer(playerObject);
     }
   );
 }
