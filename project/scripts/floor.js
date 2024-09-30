@@ -19,7 +19,7 @@ function loadModel() {
   const position = new Vector3(0, 0, 0);
   const rotation = new Vector3(0, 0, 0);
 
-  PSX.LoadModelGLB('./assets/models/01.glb', scale, position, rotation, (loadedModel) => {
+  PSX.LoadModelGLB('01.glb', scale, position, rotation, (loadedModel) => {
       floorModel = loadedModel;
       floorObject = PSX.instantiate(floorModel, 'floor', 'floor');
       console.log(floorObject.getSceneId()); // Acessa o ID

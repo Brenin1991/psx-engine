@@ -145,8 +145,9 @@ function moveBullets() {
 function moveEnemyBullets() {
   enemyBullets.forEach((bulletData, index) => {
     const bullet = bulletData.bullet;
-      const direction = bulletData.target; // Usar a direção calculada no momento do disparo
+    const direction = bulletData.target; // Usar a direção calculada no momento do disparo
 
+    //const direction = PSX.trackTo(player.model, bullet.model);
     PSX.translateTo(bullet.model, direction, 1.5);
 
     //bullet.model.lookAt(direction);

@@ -18,7 +18,7 @@ function loadModel() {
   const rotation = new Vector3(0, 0, 0);
 
   PSX.LoadModelGLB(
-    "./assets/models/missile2.glb",
+    "missile2.glb",
     scale,
     position,
     rotation,

@@ -19,7 +19,7 @@ export function gameLoop() {
 
 function loadModel() {
   PSX.LoadModelGLB(
-    "./assets/models/tank.glb",
+    "tank.glb",
     new Vector3(4, 4, 4),
     new Vector3(0, 0, 0),
     new Vector3(0, 0, 0),
@@ -29,7 +29,7 @@ function loadModel() {
   );
 
   PSX.LoadModelGLB(
-    "./assets/models/helicopter.glb",
+    "helicopter.glb",
     new Vector3(0.01, 0.01, 0.01),
     new Vector3(0, 0, 0),
     new Vector3(0, 0, 0),

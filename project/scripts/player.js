@@ -21,7 +21,7 @@ function loadModel() {
   const rotation = new Vector3(0, Math.PI, 0);
 
   PSX.LoadModelGLB(
-    "./assets/models/f16.glb",
+    "f16.glb",
     scale,
     position,
     rotation,

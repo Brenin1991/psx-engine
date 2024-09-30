@@ -176,7 +176,7 @@ export function destroy(sceneObject) {
 
 // Carrega um modelo GLB
 export function LoadModelGLB(url, scale, position, rotation, callback) {
-  modelLoader.load(url, (gltf) => {
+  modelLoader.load(fileSystem.models + "/" + url, (gltf) => {
     const model = gltf.scene;
 
     if (model instanceof THREE.Object3D) {
@@ -199,6 +199,15 @@ export function translate(object, axis, value) {
   }
 }
 
+export function rotate(object, axis, value) {
+  if (value >= 0) {
+    object.rotation[axis] += value * timeMulti; // Adiciona se for positivo ou zero
+  } else {
+    object.rotation[axis] += value * timeMulti; // Subtrai automaticamente se for negativo
+  }
+}
+
+
 export function translateTo(model, target, velocity) {
   model.position.addScaledVector(target, velocity * timeMulti);
 }
@@ -209,6 +218,12 @@ export function trackTo(origin, target) {
 
   return direction;
 }
+/*
+export function followTarget(origin, target) {
+  let direction = new THREE.Vector3();
+  direction.subVectors(origin.position, target.position).normalize();
+  bullet.position.addScaledVector(direction, 1); // Velocidade do tiro
+}*/
 
 export function distance(origin, target) {
   const dist = origin.position.distanceTo(target.position);
