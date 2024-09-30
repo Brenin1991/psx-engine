@@ -86,7 +86,7 @@ export function inputs(player) {
         player.model.rotation.y = Math.PI;
       // Botão de disparo (botão A do controle Xbox)
       if (gp.buttons[0].pressed) {
-        //shoot();
+        player.components.playerShoot();
       }
     }
 }

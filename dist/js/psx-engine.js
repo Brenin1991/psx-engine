@@ -148,8 +148,6 @@ export function findObjectByName(name, callback) {
   return null; // Retorna null se nenhum objeto for encontrado
 }
 
-
-
 // Remove um modelo da cena
 export function destroy(sceneObject) {
   // Verifica se o objeto existe na coleção
@@ -193,6 +191,10 @@ export function translate(object, axis, value) {
   } else {
     object[axis] += value * timeMulti; // Subtrai automaticamente se for negativo
   }
+}
+
+export function translateTo(model, target, velocity) {
+  model.position.addScaledVector(target, velocity * timeMulti);
 }
 
 
@@ -251,5 +253,33 @@ export default class Vector3 {
     const mag = this.magnitude();
     return new Vector3(this.x / mag, this.y / mag, this.z / mag);
   }
+
+  // Método para aplicar um quaternion ao vetor
+  applyQuaternion(quaternion) {
+    const x = this.x, y = this.y, z = this.z;
+    const qx = quaternion.x, qy = quaternion.y, qz = quaternion.z, qw = quaternion.w;
+
+    // Calcular o produto do quaternion
+    const ix = qw * x + qy * z - qz * y;
+    const iy = qw * y + qz * x - qx * z;
+    const iz = qw * z + qx * y - qy * x;
+    const iw = -qx * x - qy * y - qz * z;
+
+    // Calcular o resultado final após a rotação
+    this.x = ix * qw + iw * -qx + iy * -qz - iz * -qy;
+    this.y = iy * qw + iw * -qy + iz * -qx - ix * -qz;
+    this.z = iz * qw + iw * -qz + ix * -qy - iy * -qx;
+
+    return this;
+  }
+}
+
+
+export function createSphere(r, h, v, c) {
+  let sphereGeometry = new THREE.SphereGeometry(r, h, v);
+  let material = new THREE.MeshBasicMaterial({ color: c });
+  let sphere = new THREE.Mesh(sphereGeometry, material);
+
+  return sphere;
 }
 

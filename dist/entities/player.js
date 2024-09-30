@@ -1,6 +1,7 @@
 import * as PSX from "../psx-engine-dist.js";
 import Vector3 from "../psx-engine-dist.js";
 import { inputs } from "./inputs.js";
+import { shoot } from "./playerShoot.js";
 
 let playerModel;
 let playerObject;
@@ -26,7 +27,7 @@ function loadModel() {
     (loadedModel) => {
       playerModel = loadedModel;
       playerObject = PSX.instantiate(playerModel, "player", "player");
-      console.log(playerObject.getSceneId()); // Acessa o ID
+      playerObject.addComponent('playerShoot', playerShoot);
     }
   );
 }
@@ -35,4 +36,8 @@ function PlayerController() {
   if (playerObject) {
     inputs(playerObject);
   }
+}
+
+function playerShoot() {
+  shoot(playerObject);
 }

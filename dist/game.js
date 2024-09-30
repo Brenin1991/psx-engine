@@ -1,10 +1,10 @@
-
 import * as PSX from './psx-engine-dist.js';
 import { gameStart as cameraControllerGameStart, gameLoop as cameraControllerGameLoop } from './entities/cameraController.js';
 import { gameStart as enemyGameStart, gameLoop as enemyGameLoop } from './entities/enemy.js';
 import { gameStart as floorGameStart, gameLoop as floorGameLoop } from './entities/floor.js';
 import { gameStart as inputsGameStart, gameLoop as inputsGameLoop } from './entities/inputs.js';
 import { gameStart as playerGameStart, gameLoop as playerGameLoop } from './entities/player.js';
+import { gameStart as playerShootGameStart, gameLoop as playerShootGameLoop } from './entities/playerShoot.js';
 
 function start() {
   PSX.setGameStart(gameStart);
@@ -19,6 +19,7 @@ function gameStart() {
   floorGameStart();
   inputsGameStart();
   playerGameStart();
+  playerShootGameStart();
 
 }
 
@@ -29,6 +30,7 @@ function gameLoop() {
   floorGameLoop();
   inputsGameLoop();
   playerGameLoop();
+  playerShootGameLoop();
 
 }
 
