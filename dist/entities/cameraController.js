@@ -1,5 +1,6 @@
 import * as PSX from '../psx-engine-dist.js';
 import Vector3 from "../psx-engine-dist.js";
+import * as gameManager from "./gameManager.js";
 
 let camera;
 let player;
@@ -13,7 +14,7 @@ export function gameLoop() {
     camera.lookAt(player.model.position);
     playerCamera();
   } else {
-    findPlayer();
+    player = gameManager.getPlayer();
   }
 }
 

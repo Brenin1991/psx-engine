@@ -31,7 +31,7 @@ function loadModel() {
 export function shootEnemy(enemy) {
   const bullet = missile.clone();
 
-  const player = gameManager.getPlayer()
+  const player = gameManager.getPlayer();
   
   // A posição inicial do tiro será a posição do inimigo
   bullet.position.copy(enemy.enemy.model.position);

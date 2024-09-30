@@ -83,7 +83,7 @@ function moveEnemies() {
       // Verificar se colidiu com o avião
       if (PSX.distance(enemy.enemy.model, player.model) < 2) {
         // Criar explosão e finalizar jogo
-       // createExplosion(enemy.enemy.position);
+        PSX.createExplosion(enemy.enemy.position);
        // endGame();
       }
 
@@ -109,7 +109,7 @@ function moveBullets() {
     enemies.forEach((enemy, enemyIndex) => {
       // Verificar colisão
       if (PSX.distance(bullet.model, enemy.enemy.model) < 4) {
-        //createExplosion(enemy.enemy.model.position);
+        PSX.createExplosion(enemy.enemy.model.position);
         const gamepads = navigator.getGamepads();
         for (let i = 0; i < gamepads.length; i++) {
           const gamepad = gamepads[i];
@@ -154,7 +154,7 @@ function moveEnemyBullets() {
     // Verificar colisão com o avião do jogador
     if (PSX.distance(bullet.model, player.model) < 2) {
       // Causar dano ou finalizar o jogo
-      //createExplosion(airplane.position);
+      PSX.createExplosion(player.model.position);
       // endGame();
       PSX.destroy(bullet)
       enemyBullets.splice(index, 1);
@@ -172,7 +172,6 @@ function moveEnemyBullets() {
 }
 
 function setEnemyShooting() {
-
   setInterval(() => {
     enemies.forEach((enemy) => {
       enemy.enemy.components.shoot(enemy);

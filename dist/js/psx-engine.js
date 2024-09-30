@@ -104,8 +104,7 @@ export function instantiate(model, name, type) {
     // Método para adicionar um componente
     addComponent: function(name, component) {
       if (typeof component === 'function') {
-        this.components[name] = component.bind(this); // Adiciona o componente como um método
-        console.log(`Componente adicionado: ${name}`);
+        this.components[name] = component.bind(this);
       } else {
         console.log('O componente deve ser uma função.');
       }
@@ -363,6 +362,40 @@ function loadTexture(name) {
   const texture = textureLoader.load(fileSystem.texture + "/" + name);
 
   return texture;
+}
+
+export function createExplosion(position) {
+  const explosionMaterial = new THREE.MeshPhongMaterial({
+    map: fireTexture, // Textura
+    emissive: new THREE.Color(0xffa500),
+    emissiveIntensity: 0.2,
+    transparent: true,
+    opacity: 1,
+    alphaTest: 0.5,
+  });
+
+  // Criar a malha da explosão e aplicar o material
+  const explosion = new THREE.Mesh(
+    new THREE.SphereGeometry(5, 10, 10),
+    explosionMaterial // Use o material com a textura aqui
+  );
+  explosion.position.copy(position);
+  //explosion.lookAt(camera);
+  //explosions.push(explosion);
+  scene.add(explosion);
+
+  /*
+  // Tocar som de explosão
+  const explosionSound = document.getElementById("explosionSound");
+  explosionSound.currentTime = 0;
+  explosionSound.play();*/
+
+  // Remover explosão após 0.5 segundos
+  setTimeout(() => {
+    console.log('remover explosão');
+    scene.remove(explosion);
+    //explosions.splice(explosions.indexOf(explosion), 1);
+  }, 500);
 }
 
 
