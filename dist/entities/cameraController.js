@@ -18,16 +18,6 @@ export function gameLoop() {
   }
 }
 
-function findPlayer () {
-  PSX.findObjectByName('player', (playerObject) => {
-    if (playerObject) {
-      player = playerObject;
-      console.log('achou o player');
-    } else {
-      console.warn('Player não encontrado');
-    }
-  });
-}
 function playerCamera() {
   // Fixar câmera no avião com suavidade (usando "lerp")
   const desiredCameraPosition = new Vector3(

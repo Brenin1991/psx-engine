@@ -62,15 +62,8 @@ function createEnemies(numEnemies, type, velocity) {
 
   for (let i = 0; i < enemiesToCreate; i++) {
     let enemy;
-
-    if (type == "plane") {
-      enemy = enemyAirplane.clone(); // Clonar o inimigo original para evitar reutilizar o mesmo objeto
-      enemy.position.set(
-        -20 + Math.random() * (30 - 2),
-        2 + Math.random() * (30 - 1) + 2, // Posição Y levemente aleatória ao redor da altura do avião
-        -200 + Math.random() * 20 // Posição Z inicial um pouco variada
-      );
-    } else if (type == "tank") {
+    
+    if (type == "tank") {
       enemy = tankModel.clone(); // Clonar o inimigo original para evitar reutilizar o mesmo objeto
       enemy.position.set(
         -20 + Math.random() * (30 - 2),
