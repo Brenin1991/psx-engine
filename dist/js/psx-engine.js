@@ -197,6 +197,19 @@ export function translateTo(model, target, velocity) {
   model.position.addScaledVector(target, velocity * timeMulti);
 }
 
+export function trackTo(origin, target) {
+  let direction = new THREE.Vector3();
+  direction.subVectors(origin.position, target.position).normalize();
+
+  return direction;
+}
+
+export function distance(origin, target) {
+  const dist = origin.position.distanceTo(target.position);
+
+  return dist;
+}
+
 
 // Função para definir o gameLoop
 export function setGameLoop(callback) {
@@ -282,4 +295,6 @@ export function createSphere(r, h, v, c) {
 
   return sphere;
 }
+
+
 

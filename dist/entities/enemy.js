@@ -1,6 +1,7 @@
 import * as PSX from "../psx-engine-dist.js";
 import Vector3 from "../psx-engine-dist.js";
 import * as gameManager from "./gameManager.js";
+import * as enemyShoot from "./enemyShoot.js";
 
 let tankModel, helicopterModel;
 let enemies = [];
@@ -93,6 +94,15 @@ function createEnemies(numEnemies, type, velocity) {
     }
 
     const enemyObj = PSX.instantiate(enemy);
-    gameManager.addEnemy({ enemy: enemyObj, type: type, velocity: velocity });
+
+    enemyObj.addComponent('shoot', shoot);
+
+    const e = { enemy: enemyObj, type: type, velocity: velocity };
+
+    gameManager.addEnemy(e);
   }
+}
+
+function shoot(enemy) {
+    enemyShoot.shootEnemy(enemy);
 }

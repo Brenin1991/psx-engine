@@ -19,7 +19,7 @@ export function shoot(player) {
   const bulletDirection = new Vector3(0, 0, 1);
   bulletDirection.applyQuaternion(player.model.quaternion);
 
-  const bulletObj = PSX.instantiate(bullet);
+  const bulletObj = PSX.instantiate(bullet, 'playerbullet', 'playerbullet');
 
   const b = { mesh: bulletObj, direction: bulletDirection }
 

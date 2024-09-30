@@ -4,16 +4,18 @@ import Vector3 from "../psx-engine-dist.js";
 let player;
 let enemies = []
 let bullets = []
+let enemyBullets = []
 
 const bulletSpeed = 2;
 
 export function gameStart() {
-  
+  setEnemyShooting();
 }
 
 export function gameLoop() {
   moveEnemies();
   moveBullets();
+  moveEnemyBullets();
 }
 
 export function setUpPlayer(p) {
@@ -46,6 +48,23 @@ export function removeBullet(b) {
   }
 }
 
+export function addEnemyBullet(b) {
+  enemyBullets.push(b);
+}
+
+export function removeEnemyBullet(b) {
+  const index = enemyBullets.indexOf(b);
+
+  if (index !== -1) {
+    enemyBullets.splice(index, 1);
+    PSX.destroy(b.mesh);
+  }
+}
+
+export function getPlayer() {
+  return player;
+}
+
 // Função que movimenta o inimigo
 function moveEnemies() {
   enemies.forEach((enemy, index) => {
@@ -62,7 +81,7 @@ function moveEnemies() {
       }
       // enemy.lookAt(null);
       // Verificar se colidiu com o avião
-      if (enemy.enemy.model.position.distanceTo(player.model.position) < 2) {
+      if (PSX.distance(enemy.enemy.model, player.model) < 2) {
         // Criar explosão e finalizar jogo
        // createExplosion(enemy.enemy.position);
        // endGame();
@@ -120,4 +139,43 @@ function moveBullets() {
       }
     });
   });
+}
+
+// Função para mover os tiros inimigos em direção ao jogador
+function moveEnemyBullets() {
+  enemyBullets.forEach((bulletData, index) => {
+    const bullet = bulletData.bullet;
+      const direction = bulletData.target; // Usar a direção calculada no momento do disparo
+
+    PSX.translateTo(bullet.model, direction, 1.5);
+
+    bullet.model.lookAt(direction);
+    //createSmokeTrail(bullet.position, "0x888888");
+    // Verificar colisão com o avião do jogador
+    if (PSX.distance(bullet.model, player.model) < 2) {
+      // Causar dano ou finalizar o jogo
+      //createExplosion(airplane.position);
+      // endGame();
+      PSX.destroy(bullet)
+      enemyBullets.splice(index, 1);
+    }
+
+    // Remover o projétil se sair da área de jogo
+    if (
+      bullet.model.position.z > player.model.position.z + 20 ||
+      bullet.model.position.z < player.model.position.z - 100
+    ) {
+      PSX.destroy(bullet)
+      enemyBullets.splice(index, 1);
+    }
+  });
+}
+
+function setEnemyShooting() {
+
+  setInterval(() => {
+    enemies.forEach((enemy) => {
+      enemy.enemy.components.shoot(enemy);
+    });
+  }, 3000);
 }
