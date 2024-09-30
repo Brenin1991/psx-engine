@@ -149,8 +149,8 @@ function moveEnemyBullets() {
 
     PSX.translateTo(bullet.model, direction, 1.5);
 
-    bullet.model.lookAt(direction);
-    //createSmokeTrail(bullet.position, "0x888888");
+    //bullet.model.lookAt(direction);
+    PSX.createSmokeTrail(bullet.model.position, "0x888888");
     // Verificar colisão com o avião do jogador
     if (PSX.distance(bullet.model, player.model) < 2) {
       // Causar dano ou finalizar o jogo

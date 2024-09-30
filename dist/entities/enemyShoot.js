@@ -18,7 +18,7 @@ function loadModel() {
   const rotation = new Vector3(0, 0, 0);
 
   PSX.LoadModelGLB(
-    "./models/missile.glb",
+    "./models/missile2.glb",
     scale,
     position,
     rotation,
@@ -40,7 +40,7 @@ export function shootEnemy(enemy) {
   
   const bulletObj = PSX.instantiate(bullet, 'enemybullet', 'enemybullet');
 
-  bulletObj.model.lookAt(direction);
+  bulletObj.model.lookAt(player.model.position);
 
   const b = { bullet: bulletObj, target: direction };
 

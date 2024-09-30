@@ -8,6 +8,13 @@ let gameLoopFunction = null; // Variável para armazenar o callback do gameLoop
 const modelLoader = new GLTFLoader();
 const keysPressed = {}; // Armazena o estado das teclas pressionadas
 
+const fileSystem = {
+  models: "models",
+  sounds: "sounds",
+  texture: "textures",
+  scripts: "scripts",
+};
+
 let idCounter = 0; // Contador para gerar IDs únicos
 
 let timeMulti = 1;
@@ -17,7 +24,7 @@ let sceneObjects = [];
 // Inicializa a cena, câmera e renderizador
 export function init() {
   scene = new THREE.Scene();
-  camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+  camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
   renderer = new THREE.WebGLRenderer();
 
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -294,6 +301,68 @@ export function createSphere(r, h, v, c) {
   let sphere = new THREE.Mesh(sphereGeometry, material);
 
   return sphere;
+}
+
+
+const smokeTexture = loadTexture("smoke.png");
+const fireTexture = loadTexture("explosion.png");
+
+const smokeGeometry = new THREE.SphereGeometry(0.5, 8, 8);
+const fireGeometry = new THREE.SphereGeometry(0.5, 8, 8);
+
+// Criar o material da fumaça uma vez
+const smokeMaterial = new THREE.MeshBasicMaterial({
+  map: smokeTexture, // Aplique a textura
+  transparent: true,
+  opacity: 1,
+});
+
+// Criar o material da chama com cor amarelada uma vez
+const fireMaterial = new THREE.MeshBasicMaterial({
+  map: fireTexture,
+  transparent: true,
+  opacity: 1,
+});
+
+ //PARTICULAS (FUTURO PARTICLES SYSTEM)
+export function createSmokeTrail(position, color) {
+  const smoke = new THREE.Mesh(smokeGeometry, smokeMaterial.clone());
+  const fire = new THREE.Mesh(fireGeometry, fireMaterial.clone());
+
+  // Definir a posição inicial da fumaça e da chama como a posição do projétil
+  smoke.position.copy(position);
+  fire.position.copy(position);
+
+  // Adicionar a fumaça e a chama à cena
+  scene.add(smoke);
+  scene.add(fire);
+
+  // Tornar a fumaça gradualmente mais transparente e removê-la após um tempo
+  const fadeDuration = 1000; // Tempo em milissegundos antes de remover a fumaça
+  const fadeInterval = setInterval(() => {
+    smoke.material.opacity -= 0.04; // Diminuir a opacidade gradualmente
+    if (smoke.material.opacity <= 0) {
+      clearInterval(fadeInterval); // Parar a redução de opacidade
+      scene.remove(smoke); // Remover a fumaça da cena
+    }
+  }, 50); // Atualiza a cada 50ms para um fade suave
+
+  // Tornar a chama mais transparente rapidamente e removê-la após um tempo
+  const fireFadeDuration = 100; // A chama desaparece mais rapidamente
+  const fireFadeInterval = setInterval(() => {
+    fire.material.opacity -= 0.8; // Diminui a opacidade mais rápido que a fumaça
+    if (fire.material.opacity <= 0) {
+      clearInterval(fireFadeInterval); // Parar a redução de opacidade
+      scene.remove(fire); // Remover a chama da cena
+    }
+  }, 20); // Atualiza a cada 50ms
+}
+
+function loadTexture(name) {
+  const textureLoader = new THREE.TextureLoader();
+  const texture = textureLoader.load(fileSystem.texture + "/" + name);
+
+  return texture;
 }
 
 
