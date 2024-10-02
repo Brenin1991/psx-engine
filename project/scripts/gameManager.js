@@ -9,10 +9,14 @@ let enemyBullets = []
 
 const bulletSpeed = 2;
 
+let explosionSFX;
+
 export function gameStart() {
   initializeWithRetry(() => {
     setEnemyShooting();
   });
+
+  explosionSFX = PSX.audioPlayer('explosion.wav');
 }
 
 export function gameLoop() {
@@ -87,6 +91,7 @@ function moveEnemies() {
       if (PSX.distance(enemy.enemy.gameObject, player.gameObject) < 2) {
         // Criar explosão e finalizar jogo
         PSX.createExplosion(enemy.enemy.position);
+        explosionSFX.play();
        // endGame();
       }
 
@@ -113,6 +118,7 @@ function moveBullets() {
       // Verificar colisão
       if (PSX.distance(bullet.gameObject, enemy.enemy.gameObject) < 4) {
         PSX.createExplosion(enemy.enemy.gameObject.position);
+        explosionSFX.play();
         const gamepads = navigator.getGamepads();
         for (let i = 0; i < gamepads.length; i++) {
           const gamepad = gamepads[i];
@@ -159,6 +165,7 @@ function moveEnemyBullets() {
     if (PSX.distance(bullet.gameObject, player.gameObject) < 2) {
       // Causar dano ou finalizar o jogo
       PSX.createExplosion(player.gameObject.position);
+      explosionSFX.play();
       // endGame();
       PSX.destroy(bullet)
       enemyBullets.splice(index, 1);

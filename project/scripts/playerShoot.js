@@ -4,7 +4,10 @@ import * as gameManager from "./gameManager.js";
 
 const bulletMesh = PSX.createSphere(0.1, 8, 8, 0xffa500);
 
+let shootSFX;
+
 export function gameStart() {
+  shootSFX = PSX.audioPlayer('shot.wav');
 }
 
 export function gameLoop() {
@@ -28,10 +31,7 @@ export function shoot(player) {
   gameManager.addBullet(b);
 
   // Tocar o som do disparo
-  /*const shotSound = document.getElementById("shotSound");
-  shotSound.currentTime = 0;
-  shotSound.volume = 0.5;
-  shotSound.play();*/
+  shootSFX.play();
 }
 
 function destroyBullet(bullet) {

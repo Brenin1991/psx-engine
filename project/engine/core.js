@@ -2,23 +2,28 @@ import * as PSX from './psx-engine-dist.js';
 import { gameStart as cameraControllerGameStart, gameLoop as cameraControllerGameLoop } from '../scripts/cameraController.js';
 import { gameStart as enemyGameStart, gameLoop as enemyGameLoop } from '../scripts/enemy.js';
 import { gameStart as enemyShootGameStart, gameLoop as enemyShootGameLoop } from '../scripts/enemyShoot.js';
+import { gameStart as environmentGameStart, gameLoop as environmentGameLoop } from '../scripts/environment.js';
 import { gameStart as floorGameStart, gameLoop as floorGameLoop } from '../scripts/floor.js';
 import { gameStart as gameManagerGameStart, gameLoop as gameManagerGameLoop } from '../scripts/gameManager.js';
 import { gameStart as inputsGameStart, gameLoop as inputsGameLoop } from '../scripts/inputs.js';
 import { gameStart as playerGameStart, gameLoop as playerGameLoop } from '../scripts/player.js';
 import { gameStart as playerShootGameStart, gameLoop as playerShootGameLoop } from '../scripts/playerShoot.js';
 
+
 let sceneLoad;
 
 async function start() {
-  PSX.setGameStart(gameStart);
-  PSX.setGameLoop(gameLoop);
   PSX.init(); // Inicializa a engine
 
   // Um delay aqui, por exemplo 5 segundos (5000 milissegundos)
   await delay(5000);
   // Carregar o projeto e esperar que o carregamento finalize antes de continuar
   await loadProject();
+
+  await delay(5000);
+  
+  PSX.setGameStart(gameStart);
+  PSX.setGameLoop(gameLoop);
 
   console.log('Projeto carregado com sucesso, iniciando gameStart.');
 
@@ -34,44 +39,44 @@ function delay(ms) {
 
 // Função que será chamada no primeiro frame
 async function gameStart() {
-  // Espera todas as funções gameStart terminarem antes de iniciar o loop do jogo
+// Espera todas as funções gameStart terminarem antes de iniciar o loop do jogo
   await Promise.all([
-    cameraControllerGameStart(),
-    enemyGameStart(),
-    enemyShootGameStart(),
-    floorGameStart(),
-    gameManagerGameStart(),
-    inputsGameStart(),
-    playerGameStart(),
-    playerShootGameStart()
+      cameraControllerGameStart(),
+      enemyGameStart(),
+      enemyShootGameStart(),
+      environmentGameStart(),
+      floorGameStart(),
+      gameManagerGameStart(),
+      inputsGameStart(),
+      playerGameStart(),
+      playerShootGameStart(),
+
   ]);
-
   console.log('Todos os componentes carregados!');
-
-  // Após tudo carregar, você pode salvar o projeto, por exemplo:
-  //setTimeout(saveProject, 10000);
 }
 
 // Função que será chamada a cada frame
-function gameLoop() {
-  // Este código é chamado em cada frame
+async function gameLoop() {
   cameraControllerGameLoop();
   enemyGameLoop();
   enemyShootGameLoop();
+  environmentGameLoop();
   floorGameLoop();
   gameManagerGameLoop();
   inputsGameLoop();
   playerGameLoop();
   playerShootGameLoop();
+
 }
+
+
+document.addEventListener('DOMContentLoaded', start);
 
 // Função para salvar o projeto
 function saveProject() {
   const sceneJson = PSX.saveProject();
   window.electron.saveProject(sceneJson); // Enviando o JSON para o processo principal
 }
-
-document.addEventListener('DOMContentLoaded', start);
 
 // Receber resposta do processo principal
 window.electron.onSaveProjectReply((response) => {

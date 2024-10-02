@@ -4,11 +4,13 @@ import { initializeWithRetry } from '../engine/initialization.js';
 import * as gameManager from "./gameManager.js";
 
 let missile;
+let missileSFX;
 
 export function gameStart() {
   initializeWithRetry(() => {
     loadModel();
   });
+  missileSFX = PSX.audioPlayer('enemyShot.mp3');
 }
 
 export function gameLoop() {
@@ -32,6 +34,9 @@ function loadModel() {
 }
 
 export function shootEnemy(enemy) {
+  missileSFX.setVolume(0.3);
+  missileSFX.play();
+
   const bullet = missile.clone();
 
   const player = gameManager.getPlayer();

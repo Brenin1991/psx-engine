@@ -1,12 +1,30 @@
 import * as THREE from 'three';
+
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
+
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { FilmPass } from 'three/examples/jsm/postprocessing/FilmPass.js';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
+import { FXAAShader } from 'three/examples/jsm/shaders/FXAAShader.js';
+import { TexturePass } from 'three/examples/jsm/postprocessing/TexturePass.js';
+//import { DepthOfFieldPass } from 'three/examples/jsm/postprocessing/DepthOfFieldPass.js';
+//import { MotionBlurPass } from 'three/examples/jsm/postprocessing/MotionBlurPass.js';
+import { VignetteShader } from 'three/examples/jsm/shaders/VignetteShader.js';
+import { ColorCorrectionShader } from 'three/examples/jsm/shaders/ColorCorrectionShader.js';
 
 // Variáveis globais do engine
-let scene, camera, renderer;
+let scene, camera, renderer, composer, renderPass, fxaaPass, listener;
 let gameStartFunction = null; // Variável para armazenar o callback do gameStart
 let gameLoopFunction = null; // Variável para armazenar o callback do gameLoop
 const modelLoader = new GLTFLoader();
 const keysPressed = {}; // Armazena o estado das teclas pressionadas
+
+// loaders
+const rgbeLoader = new RGBELoader();
+const audioLoader = new THREE.AudioLoader();
 
 const fileSystem = {
   models: "./assets/models",
@@ -29,12 +47,25 @@ export function init() {
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
 
+  composer = new EffectComposer(renderer);
+  renderPass = new RenderPass(scene, camera);
+  composer.addPass(renderPass);
+
+  fxaaPass = new ShaderPass(FXAAShader);
+  fxaaPass.uniforms['resolution'].value.set(1 / window.innerWidth, 1 / window.innerHeight);
+  composer.addPass(fxaaPass);
+
+  listener = new THREE.AudioListener();
+  camera.add(listener);
+
   const geometry = new THREE.BoxGeometry();
   const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
   const cube = new THREE.Mesh(geometry, material);
   scene.add(cube);
   camera.position.z = 15;
   camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+  composer.render();
 
   const ambientLight = new THREE.AmbientLight(0x404040); // Luz suave e difusa
   scene.add(ambientLight);
@@ -66,6 +97,7 @@ export function init() {
 
     cube.rotation.x += 0.01;
     cube.rotation.y += 0.01;
+    
     renderer.render(scene, camera);
   }
 
@@ -86,7 +118,7 @@ export function saveProject() {
 
 export function loadProject(sceneJson) {
   const loadedScene = new THREE.ObjectLoader().parse( sceneJson );
-  scene = new THREE.Scene();
+  //scene = new THREE.Scene();
   if (loadedScene.children.length > 0) {
     // Loop através de todos os filhos
     loadedScene.children.forEach((child) => {
@@ -417,7 +449,7 @@ export function createExplosion(position) {
   const explosionMaterial = new THREE.MeshPhongMaterial({
     map: fireTexture, // Textura
     emissive: new THREE.Color(0xffa500),
-    emissiveIntensity: 0.2,
+    emissiveIntensity: 0.8,
     transparent: true,
     opacity: 1,
     alphaTest: 0.5,
@@ -438,6 +470,117 @@ export function createExplosion(position) {
   }, 500);
 }
 
+export function loadTexture(name) {
+  const textureLoader = new THREE.TextureLoader();
+  const texture = textureLoader.load(fileSystem.texture + "/" + name);
+
+  return texture;
+}
+
+export class Environment {
+  setHDR(path) {
+      rgbeLoader.load(fileSystem.texture + '/' + path, (texture) => {
+          texture.mapping = THREE.EquirectangularReflectionMapping;
+          scene.environment = texture; // Define o ambiente
+          scene.background = texture;   // Define o fundo
+      });
+  }
+
+  setSkybox(images) {
+      const loader = new THREE.CubeTextureLoader();
+      const skyTexture = loader.load(fileSystem.texture + '/' + images);
+      scene.background = skyTexture; // Define o céu
+  }
+
+  addDirectionalLight(color = 0xffffff, intensity = 1, position = [5, 10, 7.5]) {
+      const light = new THREE.DirectionalLight(color, intensity);
+      light.position.set(...position);
+      light.castShadow = true; // Habilita sombras
+      scene.add(light);
+      return light;
+  }
+
+  addAmbientLight(color = 0x404040, intensity = 1) {
+      const light = new THREE.AmbientLight(color, intensity);
+      scene.add(light);
+      return light;
+  }
+
+  addPointLight(color = 0xffffff, intensity = 1, distance = 100, position = [10, 10, 10]) {
+      const light = new THREE.PointLight(color, intensity, distance);
+      light.position.set(...position);
+      light.castShadow = true; // Habilita sombras
+      scene.add(light);
+      return light;
+  }
+
+  addSpotLight(color = 0xffffff, intensity = 1, position = [15, 30, 15]) {
+      const light = new THREE.SpotLight(color, intensity);
+      light.position.set(...position);
+      light.castShadow = true; // Habilita sombras
+      scene.add(light);
+      return light;
+  }
+
+  setFog(color = 0xffffff, density = 0.1) {
+      scene.fog = new THREE.FogExp2(color, density);
+  }
+}
+
+////////////////////// pos processing ////////////////////////
+
+export class PostProcessing {
+  addBloom(strength = 1, radius = 1, threshold = 0.1) {
+      const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), strength, radius, threshold);
+      composer.addPass(bloomPass);
+  }
+
+  addFilm(grain = 0.35, intensity = 0.5, scanlineIntensity = 0.75) {
+      const filmPass = new FilmPass(grain, intensity, scanlineIntensity, false);
+      composer.addPass(filmPass);
+  }
+/*
+  addDepthOfField(focusDistance = 0.1, focalLength = 1.0, aperture = 0.01) {
+      const dofPass = new DepthOfFieldPass(this.camera, {
+          focusDistance: focusDistance,
+          focalLength: focalLength,
+          aperture: aperture,
+      });
+      composer.addPass(dofPass);
+  }
+
+  /*addMotionBlur(blurAmount = 0.5) {
+      const motionBlurPass = new MotionBlurPass(blurAmount);
+      composer.addPass(motionBlurPass);
+  }*/
+
+  addVignette(intensity = 0.5, radius = 0.5) {
+      const vignettePass = new ShaderPass(VignetteShader);
+      vignettePass.uniforms['intensity'].value = intensity;
+      vignettePass.uniforms['radius'].value = radius;
+      composer.addPass(vignettePass);
+  }
+
+  addTexture(texture) {
+      const texturePass = new TexturePass(texture);
+      composer.addPass(texturePass);
+  }
+
+  render() {
+      composer.render();
+  }
+}
+
+export function audioPlayer(path) {
+  const sound = new THREE.Audio(listener);
+
+  audioLoader.load(fileSystem.sounds + '/' + path, function(buffer) {
+      sound.setBuffer(buffer);
+      sound.setVolume(1);
+  });
+
+  return sound;
+}
 
 
 
