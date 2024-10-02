@@ -1,5 +1,6 @@
 import * as PSX from '../engine/psx-engine-dist.js';
 import Vector3 from "../engine/psx-engine-dist.js";
+import { initializeWithRetry } from '../engine/initialization.js';
 
 let floorModel;
 let floorObject;
@@ -7,11 +8,17 @@ let floorObject;
 const speed = 0.4;  
 
 export function gameStart() {
-  loadModel();
+  PSX.findObjectByName('floor', (foundObject) => {
+    if (foundObject) {
+      floorObject = foundObject;
+    }
+  });
 }
 
 export function gameLoop() {
-  moveFloor();
+  if(floorObject) {
+    moveFloor();
+  }
 }
 
 function loadModel() {
@@ -21,14 +28,14 @@ function loadModel() {
 
   PSX.LoadModelGLB('01.glb', scale, position, rotation, (loadedModel) => {
       floorModel = loadedModel;
-      floorObject = PSX.instantiate(floorModel, 'floor', 'floor');
+      floorObject = PSX.instantiate(floorModel, 'floor');
       console.log(floorObject.getSceneId()); // Acessa o ID
   });
 }
 
 function moveFloor() {
-  if (floorObject.model) {
-    PSX.translate(floorObject.model.position, "z", speed);
-    if (floorObject.model.position.z > 500) floorObject.model.position.z = 0;
+  if (floorObject) {
+    PSX.translate(floorObject.gameObject.position, "z", speed);
+    if (floorObject.gameObject.position.z > 500) floorObject.gameObject.position.z = 0;
   }
 }

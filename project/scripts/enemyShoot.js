@@ -1,11 +1,14 @@
 import * as PSX from '../engine/psx-engine-dist.js';
 import Vector3 from "../engine/psx-engine-dist.js";
+import { initializeWithRetry } from '../engine/initialization.js';
 import * as gameManager from "./gameManager.js";
 
 let missile;
 
 export function gameStart() {
-  loadModel();
+  initializeWithRetry(() => {
+    loadModel();
+  });
 }
 
 export function gameLoop() {
@@ -34,13 +37,13 @@ export function shootEnemy(enemy) {
   const player = gameManager.getPlayer();
   
   // A posição inicial do tiro será a posição do inimigo
-  bullet.position.copy(enemy.enemy.model.position);
+  bullet.position.copy(enemy.enemy.gameObject.position);
 
-  const direction = PSX.trackTo(player.model, enemy.enemy.model);
+  const direction = PSX.trackTo(player.gameObject, enemy.enemy.gameObject);
   
-  const bulletObj = PSX.instantiate(bullet, 'enemybullet', 'enemybullet');
+  const bulletObj = PSX.instantiate(bullet, 'enemybullet');
 
-  bulletObj.model.lookAt(player.model.position);
+  bulletObj.gameObject.lookAt(player.gameObject.position);
 
   const b = { bullet: bulletObj, target: direction };
 

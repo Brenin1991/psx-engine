@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'; // Importando o GLTFLoader
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 // Variáveis globais do engine
 let scene, camera, renderer;
@@ -15,11 +15,10 @@ const fileSystem = {
   scripts: "./scripts",
 };
 
-let idCounter = 0; // Contador para gerar IDs únicos
-
 let timeMulti = 1;
 
 let sceneObjects = [];
+let prefabs = [];
 
 // Inicializa a cena, câmera e renderizador
 export function init() {
@@ -78,26 +77,45 @@ export function isKeyPressed(key) {
   return keysPressed[key.toLowerCase()] === true;
 }
 
-// Adiciona um modelo à cena
+export function saveProject() {
+  // Transformar a cena do Three.js em JSON
+  const sceneJson = scene.toJSON();
+
+  return sceneJson;
+}
+
+export function loadProject(sceneJson) {
+  const loadedScene = new THREE.ObjectLoader().parse( sceneJson );
+  scene = new THREE.Scene();
+  if (loadedScene.children.length > 0) {
+    // Loop através de todos os filhos
+    loadedScene.children.forEach((child) => {
+      //console.log(child); // Exibe o objeto filho no console
+      const obj = child.clone();
+      console.log(obj);
+      instantiate(obj, obj.name);
+    });
+  }
+}
+
 // Adiciona um modelo à cena
 export function instantiate(model, name, type) {
   const newObj = model.clone();
-  idCounter++; // Incrementa o contador para cada nova instância
-
+  newObj.name = name;
   let sceneObject = {
-    id: idCounter, // Atribui um ID único
-    name: name,
-    model: newObj,
-    type: type,
+    id: newObj.id, // Atribui um ID único
+    name: newObj.name,
+    gameObject: newObj,
+    type: newObj.type,
     components: {}, // Armazena componentes como um objeto
   
     // Método para acessar o ID
-    getSceneId: function() {
+    getGameObjectId: function() {
       return this.id;
     },
   
     // Método para acessar o nome
-    getSceneName: function() {
+    getGameObjectName: function() {
       return this.name;
     },
   
@@ -122,7 +140,7 @@ export function instantiate(model, name, type) {
   };
 
   sceneObjects.push(sceneObject);
-  scene.add(sceneObject.model);
+  scene.add(sceneObject.gameObject);
 
   return sceneObject;
 }
@@ -154,6 +172,24 @@ export function findObjectByName(name, callback) {
   return null; // Retorna null se nenhum objeto for encontrado
 }
 
+export function findObjectByType(type, callback) {
+  for (let sceneObject of sceneObjects) {
+    if (sceneObject.type === type) {
+      if (callback && typeof callback === 'function') {
+        callback(sceneObject); // Chama o callback passando o objeto encontrado
+      }
+      return sceneObject; // Retorna o objeto se o nome corresponder
+    }
+  }
+  
+  if (callback && typeof callback === 'function') {
+    callback(null); // Chama o callback com null se nenhum objeto for encontrado
+  }
+  
+  return null; // Retorna null se nenhum objeto for encontrado
+}
+
+
 // Remove um modelo da cena
 export function destroy(sceneObject) {
   // Verifica se o objeto existe na coleção
@@ -161,7 +197,7 @@ export function destroy(sceneObject) {
   
   if (index !== -1) {
     // Remove o modelo da cena
-    scene.remove(sceneObject.model);
+    scene.remove(sceneObject.gameObject);
     
     // Remove o objeto da coleção
     sceneObjects.splice(index, 1);
@@ -338,7 +374,7 @@ const fireMaterial = new THREE.MeshBasicMaterial({
   opacity: 1,
 });
 
- //PARTICULAS (FUTURO PARTICLES SYSTEM)
+ // PARTÍCULA (FUTURO PARTICLES SYSTEM)
 export function createSmokeTrail(position, color) {
   const smoke = new THREE.Mesh(smokeGeometry, smokeMaterial.clone());
   const fire = new THREE.Mesh(fireGeometry, fireMaterial.clone());
@@ -350,6 +386,10 @@ export function createSmokeTrail(position, color) {
   // Adicionar a fumaça e a chama à cena
   scene.add(smoke);
   scene.add(fire);
+
+  // Definir a opacidade inicial
+  smoke.material.opacity = 1; // Começar totalmente opaco
+  fire.material.opacity = 1; // Começar totalmente opaco
 
   // Tornar a fumaça gradualmente mais transparente e removê-la após um tempo
   const fadeDuration = 1000; // Tempo em milissegundos antes de remover a fumaça
@@ -363,20 +403,14 @@ export function createSmokeTrail(position, color) {
 
   // Tornar a chama mais transparente rapidamente e removê-la após um tempo
   const fireFadeDuration = 100; // A chama desaparece mais rapidamente
+  fire.material.opacity = 1; // Começar totalmente opaco
   const fireFadeInterval = setInterval(() => {
     fire.material.opacity -= 0.8; // Diminui a opacidade mais rápido que a fumaça
     if (fire.material.opacity <= 0) {
       clearInterval(fireFadeInterval); // Parar a redução de opacidade
       scene.remove(fire); // Remover a chama da cena
     }
-  }, 20); // Atualiza a cada 50ms
-}
-
-function loadTexture(name) {
-  const textureLoader = new THREE.TextureLoader();
-  const texture = textureLoader.load(fileSystem.texture + "/" + name);
-
-  return texture;
+  }, 20); // Atualiza a cada 20ms
 }
 
 export function createExplosion(position) {
@@ -395,23 +429,15 @@ export function createExplosion(position) {
     explosionMaterial // Use o material com a textura aqui
   );
   explosion.position.copy(position);
-  //explosion.lookAt(camera);
-  //explosions.push(explosion);
   scene.add(explosion);
-
-  /*
-  // Tocar som de explosão
-  const explosionSound = document.getElementById("explosionSound");
-  explosionSound.currentTime = 0;
-  explosionSound.play();*/
 
   // Remover explosão após 0.5 segundos
   setTimeout(() => {
     console.log('remover explosão');
     scene.remove(explosion);
-    //explosions.splice(explosions.indexOf(explosion), 1);
   }, 500);
 }
+
 
 
 

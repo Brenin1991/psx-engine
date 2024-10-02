@@ -1,5 +1,6 @@
 import * as PSX from '../engine/psx-engine-dist.js';
 import Vector3 from "../engine/psx-engine-dist.js";
+import { initializeWithRetry } from '../engine/initialization.js';
 import * as gameManager from "./gameManager.js";
 import * as enemyShoot from "./enemyShoot.js";
 
@@ -7,10 +8,15 @@ let tankModel, helicopterModel;
 let enemies = [];
 
 // Função que será chamada no primeiro frame
+let isInitialized = false;
+
 export function gameStart() {
   loadModel();
-  spawnEnemies();
+  initializeWithRetry(() => {
+    spawnEnemies();
+  });
 }
+
 
 // Função chamada a cada frame
 export function gameLoop() {
@@ -42,11 +48,11 @@ function loadModel() {
 function spawnEnemies() {
     setInterval(function () {
       createEnemies(2, "tank", 0.4); // Exemplo: criar 5 inimigos a cada 3 segundos
-    }, 5000);
+    }, 10000);
   
     setInterval(function () {
       createEnemies(3, "helicopter", 1); // Exemplo: criar 5 inimigos a cada 3 segundos
-    }, 8000);
+    }, 15000);
   }
 
 function createEnemies(numEnemies, type, velocity) {
@@ -86,7 +92,7 @@ function createEnemies(numEnemies, type, velocity) {
       );
     }
 
-    const enemyObj = PSX.instantiate(enemy);
+    const enemyObj = PSX.instantiate(enemy, 'enemy');
 
     enemyObj.addComponent('shoot', shoot);
 

@@ -14,12 +14,12 @@ export function gameLoop() {
 export function shoot(player) {
   const bullet = bulletMesh.clone();
 
-  bullet.position.copy(player.model.position);
+  bullet.position.copy(player.gameObject.position);
 
   const bulletDirection = new Vector3(0, 0, 1);
-  bulletDirection.applyQuaternion(player.model.quaternion);
+  bulletDirection.applyQuaternion(player.gameObject.quaternion);
 
-  const bulletObj = PSX.instantiate(bullet, 'playerbullet', 'playerbullet');
+  const bulletObj = PSX.instantiate(bullet, 'playerbullet');
 
   const b = { mesh: bulletObj, direction: bulletDirection }
 

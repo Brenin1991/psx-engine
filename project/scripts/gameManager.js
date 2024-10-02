@@ -1,4 +1,5 @@
 import * as PSX from '../engine/psx-engine-dist.js';
+import { initializeWithRetry } from '../engine/initialization.js';
 import Vector3 from "../engine/psx-engine-dist.js";
 
 let player;
@@ -9,7 +10,9 @@ let enemyBullets = []
 const bulletSpeed = 2;
 
 export function gameStart() {
-  setEnemyShooting();
+  initializeWithRetry(() => {
+    setEnemyShooting();
+  });
 }
 
 export function gameLoop() {
@@ -68,12 +71,12 @@ export function getPlayer() {
 // Função que movimenta o inimigo
 function moveEnemies() {
   enemies.forEach((enemy, index) => {
-    PSX.translate(enemy.enemy.model.position, "z", enemy.velocity);
+    PSX.translate(enemy.enemy.gameObject.position, "z", enemy.velocity);
     if (
-        enemy.enemy.model.position.distanceTo(player.model.position) > 30 &&
+        enemy.enemy.gameObject.position.distanceTo(player.gameObject.position) > 30 &&
         enemy.type != "tank"
       ) {
-        enemy.enemy.model.lookAt(player.model.position); // Fazer o inimigo olhar para o avião
+        enemy.enemy.gameObject.lookAt(player.gameObject.position); // Fazer o inimigo olhar para o avião
       } else {
         // Se a distância for menor ou igual a 5, o inimigo não seguirá mais o avião
         // Você pode deixá-lo seguir em linha reta ou congelar a rotação dele
@@ -81,14 +84,14 @@ function moveEnemies() {
       }
       // enemy.lookAt(null);
       // Verificar se colidiu com o avião
-      if (PSX.distance(enemy.enemy.model, player.model) < 2) {
+      if (PSX.distance(enemy.enemy.gameObject, player.gameObject) < 2) {
         // Criar explosão e finalizar jogo
         PSX.createExplosion(enemy.enemy.position);
        // endGame();
       }
 
     // Remover inimigo se sair da tela (se passar do jogador)
-    if (enemy.enemy.model.position.z > player.model.position.z + 10) {
+    if (enemy.enemy.gameObject.position.z > player.gameObject.position.z + 10) {
       PSX.destroy(enemy.enemy);
       enemies.splice(index, 1);
     }
@@ -101,15 +104,15 @@ function moveBullets() {
     const bullet = bulletObj.mesh;
     const direction = bulletObj.direction;
 
-    //PSX.translate(bullet.model.position, "z", bulletSpeed);
-    PSX.translateTo(bullet.model, direction, bulletSpeed);
+    //PSX.translate(bullet.gameObject.position, "z", bulletSpeed);
+    PSX.translateTo(bullet.gameObject, direction, bulletSpeed);
     //bullet.position.addScaledVector(direction, 4 * 2);
 
     // Verificar colisões com inimigos
     enemies.forEach((enemy, enemyIndex) => {
       // Verificar colisão
-      if (PSX.distance(bullet.model, enemy.enemy.model) < 4) {
-        PSX.createExplosion(enemy.enemy.model.position);
+      if (PSX.distance(bullet.gameObject, enemy.enemy.gameObject) < 4) {
+        PSX.createExplosion(enemy.enemy.gameObject.position);
         const gamepads = navigator.getGamepads();
         for (let i = 0; i < gamepads.length; i++) {
           const gamepad = gamepads[i];
@@ -147,15 +150,15 @@ function moveEnemyBullets() {
     const bullet = bulletData.bullet;
     const direction = bulletData.target; // Usar a direção calculada no momento do disparo
 
-    //const direction = PSX.trackTo(player.model, bullet.model);
-    PSX.translateTo(bullet.model, direction, 1.5);
+    //const direction = PSX.trackTo(player.gameObject, bullet.gameObject);
+    PSX.translateTo(bullet.gameObject, direction, 1.5);
 
-    //bullet.model.lookAt(direction);
-    PSX.createSmokeTrail(bullet.model.position, "0x888888");
+    //bullet.gameObject.lookAt(direction);
+    //PSX.createSmokeTrail(bullet.gameObject.position, "0x888888");
     // Verificar colisão com o avião do jogador
-    if (PSX.distance(bullet.model, player.model) < 2) {
+    if (PSX.distance(bullet.gameObject, player.gameObject) < 2) {
       // Causar dano ou finalizar o jogo
-      PSX.createExplosion(player.model.position);
+      PSX.createExplosion(player.gameObject.position);
       // endGame();
       PSX.destroy(bullet)
       enemyBullets.splice(index, 1);
@@ -163,8 +166,8 @@ function moveEnemyBullets() {
 
     // Remover o projétil se sair da área de jogo
     if (
-      bullet.model.position.z > player.model.position.z + 20 ||
-      bullet.model.position.z < player.model.position.z - 100
+      bullet.gameObject.position.z > player.gameObject.position.z + 20 ||
+      bullet.gameObject.position.z < player.gameObject.position.z - 100
     ) {
       PSX.destroy(bullet)
       enemyBullets.splice(index, 1);
@@ -177,5 +180,5 @@ function setEnemyShooting() {
     enemies.forEach((enemy) => {
       enemy.enemy.components.shoot(enemy);
     });
-  }, 3000);
+  }, 5000);
 }
