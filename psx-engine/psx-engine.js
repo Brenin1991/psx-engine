@@ -15,8 +15,12 @@ import { TexturePass } from 'three/examples/jsm/postprocessing/TexturePass.js';
 import { VignetteShader } from 'three/examples/jsm/shaders/VignetteShader.js';
 import { ColorCorrectionShader } from 'three/examples/jsm/shaders/ColorCorrectionShader.js';
 
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import * as CANNON from 'cannon-es';
+import { World, Body, Box, Sphere, Vec3 } from 'cannon-es'; // Cannon.js
+
 // Variáveis globais do engine
-let scene, camera, renderer, composer, renderPass, fxaaPass, listener;
+let scene, camera, renderer, composer, renderPass, fxaaPass, listener, world;
 let gameStartFunction = null; // Variável para armazenar o callback do gameStart
 let gameLoopFunction = null; // Variável para armazenar o callback do gameLoop
 const modelLoader = new GLTFLoader();
@@ -58,21 +62,8 @@ export function init() {
   listener = new THREE.AudioListener();
   camera.add(listener);
 
-  const geometry = new THREE.BoxGeometry();
-  const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-  const cube = new THREE.Mesh(geometry, material);
-  scene.add(cube);
-  camera.position.z = 15;
-  camera.lookAt(new THREE.Vector3(0, 0, 0));
-
-  composer.render();
-
-  const ambientLight = new THREE.AmbientLight(0x404040); // Luz suave e difusa
-  scene.add(ambientLight);
-
-  const directionalLight = new THREE.DirectionalLight(0xffffff, 1); // Luz branca
-  directionalLight.position.set(5, 5, 5); // Posição da luz
-  scene.add(directionalLight);
+  world = new World();
+  world.gravity.set(0, -9.82, 0); // Definir gravidade para simular o eixo Y
 
   // Adiciona listeners para as teclas
   document.addEventListener('keydown', (event) => {
@@ -95,8 +86,18 @@ export function init() {
       gameLoopFunction(); // Chama o loop do jogo a cada frame
     }
 
-    cube.rotation.x += 0.01;
-    cube.rotation.y += 0.01;
+    // Atualizar a física com um deltaTime (exemplo: 1/60 para 60 fps)
+    const deltaTime = 1 / 60;
+    // Atualizar o mundo físico
+    world.step(deltaTime);
+
+    // Sincronizar os objetos Three.js com Cannon.js
+    world.bodies.forEach((body) => {
+      if (body.threeObject) {
+        body.threeObject.position.copy(body.position);
+        body.threeObject.quaternion.copy(body.quaternion);
+      }
+    });
     
     renderer.render(scene, camera);
   }
@@ -376,16 +377,6 @@ export default class Vector3 {
   }
 }
 
-
-export function createSphere(r, h, v, c) {
-  let sphereGeometry = new THREE.SphereGeometry(r, h, v);
-  let material = new THREE.MeshBasicMaterial({ color: c });
-  let sphere = new THREE.Mesh(sphereGeometry, material);
-
-  return sphere;
-}
-
-
 const smokeTexture = loadTexture("smoke.png");
 const fireTexture = loadTexture("explosion.png");
 
@@ -582,5 +573,198 @@ export function audioPlayer(path) {
   return sound;
 }
 
+export class Geometry {
+  createSphere(r, h, v, c) {
+    let sphereGeometry = new THREE.SphereGeometry(r, h, v);
+    let material = new THREE.MeshBasicMaterial({ color: c });
+    let sphere = new THREE.Mesh(sphereGeometry, material);
 
+    return sphere;
+  }
 
+  createBox(width, height, depth, c) {
+    let boxGeometry = new THREE.BoxGeometry(width, height, depth);
+    let material = new THREE.MeshBasicMaterial({ color: c });
+    let box = new THREE.Mesh(boxGeometry, material);
+
+    return box;
+  }
+
+  createCylinder(radiusTop, radiusBottom, height, radialSegments, c) {
+    let cylinderGeometry = new THREE.CylinderGeometry(radiusTop, radiusBottom, height, radialSegments);
+    let material = new THREE.MeshBasicMaterial({ color: c });
+    let cylinder = new THREE.Mesh(cylinderGeometry, material);
+
+    return cylinder;
+  }
+
+  createCone(radius, height, radialSegments, c) {
+    let coneGeometry = new THREE.ConeGeometry(radius, height, radialSegments);
+    let material = new THREE.MeshBasicMaterial({ color: c });
+    let cone = new THREE.Mesh(coneGeometry, material);
+
+    return cone;
+  }
+
+  createPlane(width, height, c) {
+    let planeGeometry = new THREE.PlaneGeometry(width, height);
+    let material = new THREE.MeshBasicMaterial({ color: c, side: THREE.DoubleSide });
+    let plane = new THREE.Mesh(planeGeometry, material);
+
+    return plane;
+  }
+
+  createTorus(radius, tube, radialSegments, tubularSegments, c) {
+    let torusGeometry = new THREE.TorusGeometry(radius, tube, radialSegments, tubularSegments);
+    let material = new THREE.MeshBasicMaterial({ color: c });
+    let torus = new THREE.Mesh(torusGeometry, material);
+
+    return torus;
+  }
+
+  createIcosahedron(radius, detail, c) {
+    let icosahedronGeometry = new THREE.IcosahedronGeometry(radius, detail);
+    let material = new THREE.MeshBasicMaterial({ color: c });
+    let icosahedron = new THREE.Mesh(icosahedronGeometry, material);
+
+    return icosahedron;
+  }
+
+  createDodecahedron(radius, detail, c) {
+    let dodecahedronGeometry = new THREE.DodecahedronGeometry(radius, detail);
+    let material = new THREE.MeshBasicMaterial({ color: c });
+    let dodecahedron = new THREE.Mesh(dodecahedronGeometry, material);
+
+    return dodecahedron;
+  }
+
+  createTetrahedron(radius, detail, c) {
+    let tetrahedronGeometry = new THREE.TetrahedronGeometry(radius, detail);
+    let material = new THREE.MeshBasicMaterial({ color: c });
+    let tetrahedron = new THREE.Mesh(tetrahedronGeometry, material);
+
+    return tetrahedron;
+  }
+
+  createTorusKnot(radius, tube, tubularSegments, radialSegments, p, q, c) {
+    let torusKnotGeometry = new THREE.TorusKnotGeometry(radius, tube, tubularSegments, radialSegments, p, q);
+    let material = new THREE.MeshBasicMaterial({ color: c });
+    let torusKnot = new THREE.Mesh(torusKnotGeometry, material);
+
+    return torusKnot;
+  }
+
+  createRing(innerRadius, outerRadius, thetaSegments, phiSegments, c) {
+    let ringGeometry = new THREE.RingGeometry(innerRadius, outerRadius, thetaSegments, phiSegments);
+    let material = new THREE.MeshBasicMaterial({ color: c, side: THREE.DoubleSide });
+    let ring = new THREE.Mesh(ringGeometry, material);
+
+    return ring;
+  }
+
+  createOctahedron(radius, detail, c) {
+    let octahedronGeometry = new THREE.OctahedronGeometry(radius, detail);
+    let material = new THREE.MeshBasicMaterial({ color: c });
+    let octahedron = new THREE.Mesh(octahedronGeometry, material);
+
+    return octahedron;
+  }
+
+  createTube(path, tubularSegments, radius, radialSegments, closed, c) {
+    let tubeGeometry = new THREE.TubeGeometry(path, tubularSegments, radius, radialSegments, closed);
+    let material = new THREE.MeshBasicMaterial({ color: c });
+    let tube = new THREE.Mesh(tubeGeometry, material);
+
+    return tube;
+  }
+}
+
+export class Physics {
+  addSpherePhysics(object, radius, mass, position = null) {
+    // Usar a posição do objeto Three.js se a posição não for fornecida
+    const objPosition = position || [object.position.x, object.position.y, object.position.z];
+    
+    let sphereShape = new CANNON.Sphere(radius);
+    let sphereBody = new CANNON.Body({
+      mass: mass,
+      position: new CANNON.Vec3(...objPosition),
+      shape: sphereShape
+    });
+
+    sphereBody.threeObject = object; // Associar o objeto Three.js ao corpo
+    object.body = sphereBody; // Associar o corpo ao objeto Three.js
+    world.addBody(object.body);
+    return sphereBody;
+  }
+
+  addBoxPhysics(object, width, height, depth, mass, position = null) {
+    // Usar a posição do objeto Three.js se a posição não for fornecida
+    const objPosition = position || [object.position.x, object.position.y, object.position.z];
+
+    let boxShape = new CANNON.Box(new CANNON.Vec3(width / 2, height / 2, depth / 2));
+    let boxBody = new CANNON.Body({
+      mass: mass,
+      position: new CANNON.Vec3(...objPosition),
+      shape: boxShape
+    });
+
+    boxBody.threeObject = object; // Associar o objeto Three.js ao corpo
+
+    object.body = boxBody; // Associar o corpo ao objeto Three.js
+    world.addBody(object.body);
+    return boxBody;
+  }
+
+  addCylinderPhysics(object, radiusTop, radiusBottom, height, mass, position = null) {
+    // Usar a posição do objeto Three.js se a posição não for fornecida
+    const objPosition = position || [object.position.x, object.position.y, object.position.z];
+
+    let cylinderShape = new CANNON.Cylinder(radiusTop, radiusBottom, height, 8);
+    let cylinderBody = new CANNON.Body({
+      mass: mass,
+      position: new CANNON.Vec3(...objPosition),
+      shape: cylinderShape
+    });
+
+    cylinderBody.threeObject = object; // Associar o objeto Three.js ao corpo
+
+    object.body = cylinderBody; // Associar o corpo ao objeto Three.js
+    world.addBody(object.body);
+    return cylinderBody;
+  }
+
+  addPlanePhysics(object, mass, position = null) {
+    // Usar a posição do objeto Three.js se a posição não for fornecida
+    const objPosition = position || [object.position.x, object.position.y, object.position.z];
+
+    let planeShape = new CANNON.Plane();
+    let planeBody = new CANNON.Body({
+      mass: mass,
+      position: new CANNON.Vec3(...objPosition),
+      shape: planeShape
+    });
+
+    planeBody.threeObject = object; // Associar o objeto Three.js ao corpo
+
+    object.body = planeBody; // Associar o corpo ao objeto Three.js
+    world.addBody(object.body);
+    return planeBody;
+  }
+
+  addCustomPhysics(object, shape, mass, position = null) {
+    // Usar a posição do objeto Three.js se a posição não for fornecida
+    const objPosition = position || [object.position.x, object.position.y, object.position.z];
+
+    let customBody = new CANNON.Body({
+      mass: mass,
+      position: new CANNON.Vec3(...objPosition),
+      shape: shape
+    });
+
+    customBody.threeObject = object; // Associar o objeto Three.js ao corpo
+
+    object.body = customBody; // Associar o corpo ao objeto Three.js
+    world.addBody(object.body);
+    return customBody;
+  }
+}

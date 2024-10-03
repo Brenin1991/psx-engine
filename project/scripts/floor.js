@@ -1,9 +1,17 @@
 import * as PSX from '../engine/psx-engine-dist.js';
 import Vector3 from "../engine/psx-engine-dist.js";
 import { initializeWithRetry } from '../engine/initialization.js';
+import { Physics } from "../engine/psx-engine-dist.js";
+import { Geometry } from "../engine/psx-engine-dist.js";
+
+const physics = new Physics();
+const geometry = new Geometry()
 
 let floorModel;
 let floorObject;
+
+let planeModel;
+let planeObj;
 
 const speed = 0.4;  
 
@@ -13,6 +21,11 @@ export function gameStart() {
       floorObject = foundObject;
     }
   });
+
+  //let planeModel = geometry.createBox(100, 1, 100, 0xffa500);
+  //let planeObj = PSX.instantiate(planeModel, 'plane');
+  //planeObj.gameObject.rotation.x = -Math.PI / 2; 
+  //physics.addBoxPhysics(planeObj.gameObject,100, 1, 100, 0);
 }
 
 export function gameLoop() {

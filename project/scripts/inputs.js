@@ -93,6 +93,7 @@ export function inputs() {
       // Botão de disparo (botão A do controle Xbox)
       if (gp.buttons[0].pressed) {
         player.components.playerShoot();
+        player.components.playerJump();
       }
     }
 }

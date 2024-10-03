@@ -1,8 +1,10 @@
 import * as PSX from '../engine/psx-engine-dist.js';
 import Vector3 from "../engine/psx-engine-dist.js";
 import * as gameManager from "./gameManager.js";
+import { Geometry } from "../engine/psx-engine-dist.js";
 
-const bulletMesh = PSX.createSphere(0.1, 8, 8, 0xffa500);
+let geometry = new Geometry();
+const bulletMesh = geometry.createSphere(0.1, 8, 8, 0xffa500);
 
 let shootSFX;
 

@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@parcel/reporter-dev-server": "^2.12.0",
+    "cannon-es": "^0.20.0",
     "parcel": "^2.12.0",
     "punycode": "^2.3.1",
     "three": "^0.169.0"

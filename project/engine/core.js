@@ -8,22 +8,20 @@ import { gameStart as gameManagerGameStart, gameLoop as gameManagerGameLoop } fr
 import { gameStart as inputsGameStart, gameLoop as inputsGameLoop } from '../scripts/inputs.js';
 import { gameStart as playerGameStart, gameLoop as playerGameLoop } from '../scripts/player.js';
 import { gameStart as playerShootGameStart, gameLoop as playerShootGameLoop } from '../scripts/playerShoot.js';
+import { gameStart as testeGameStart, gameLoop as testeGameLoop } from '../scripts/teste.js';
 
 
 let sceneLoad;
 
 async function start() {
+  PSX.setGameStart(gameStart);
+  PSX.setGameLoop(gameLoop);
   PSX.init(); // Inicializa a engine
 
   // Um delay aqui, por exemplo 5 segundos (5000 milissegundos)
   await delay(5000);
   // Carregar o projeto e esperar que o carregamento finalize antes de continuar
   await loadProject();
-
-  await delay(5000);
-  
-  PSX.setGameStart(gameStart);
-  PSX.setGameLoop(gameLoop);
 
   console.log('Projeto carregado com sucesso, iniciando gameStart.');
 
@@ -42,14 +40,15 @@ async function gameStart() {
 // Espera todas as funções gameStart terminarem antes de iniciar o loop do jogo
   await Promise.all([
       cameraControllerGameStart(),
-      enemyGameStart(),
-      enemyShootGameStart(),
-      environmentGameStart(),
-      floorGameStart(),
-      gameManagerGameStart(),
-      inputsGameStart(),
-      playerGameStart(),
-      playerShootGameStart(),
+  enemyGameStart(),
+  enemyShootGameStart(),
+  environmentGameStart(),
+  floorGameStart(),
+  gameManagerGameStart(),
+  inputsGameStart(),
+  playerGameStart(),
+  playerShootGameStart(),
+  testeGameStart(),
 
   ]);
   console.log('Todos os componentes carregados!');
@@ -66,6 +65,7 @@ async function gameLoop() {
   inputsGameLoop();
   playerGameLoop();
   playerShootGameLoop();
+  testeGameLoop();
 
 }
 
