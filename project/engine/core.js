@@ -14,17 +14,19 @@ import { gameStart as testeGameStart, gameLoop as testeGameLoop } from '../scrip
 let sceneLoad;
 
 async function start() {
-  PSX.setGameStart(gameStart);
-  PSX.setGameLoop(gameLoop);
+  
   PSX.init(); // Inicializa a engine
 
   // Um delay aqui, por exemplo 5 segundos (5000 milissegundos)
   await delay(5000);
+  
   // Carregar o projeto e esperar que o carregamento finalize antes de continuar
   await loadProject();
 
   console.log('Projeto carregado com sucesso, iniciando gameStart.');
-
+  
+  PSX.setGameStart(gameStart);
+  PSX.setGameLoop(gameLoop);
   // Inicia o gameStart após o projeto ser carregado
   await gameStart();
 

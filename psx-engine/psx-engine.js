@@ -84,12 +84,12 @@ export function init() {
   function animate() {
     requestAnimationFrame(animate);
 
+    delta = clock.getDelta(); // Calcular o tempo delta
+
     // Executa a função gameLoop() se ela foi definida
     if (gameLoopFunction) {
       gameLoopFunction(); // Chama o loop do jogo a cada frame
     }
-
-    delta = clock.getDelta(); // Calcular o tempo delta
 
     // Atualizar a física com um deltaTime (exemplo: 1/60 para 60 fps)
     const deltaTime = 1 / 60;
@@ -103,6 +103,16 @@ export function init() {
         body.threeObject.quaternion.copy(body.quaternion);
       }
     });
+    
+
+    renderer.shadowMap.enabled = true;
+    //enviroment
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.outputEncoding = THREE.sRGBEncoding;
+    renderer.toneMappingExposure = 1.0;  // Ajuste a exposição conforme necessário
+    renderer.antialias = true
+    renderer.powerPreference = 'high-performance'
+    renderer.precision = 'lowp'
     
     renderer.render(scene, camera);
   }
@@ -145,6 +155,8 @@ export function instantiate(model, name, type) {
     name: newObj.name,
     gameObject: newObj,
     type: newObj.type,
+    animator: null,
+    physics: null,
     components: {}, // Armazena componentes como um objeto
   
     // Método para acessar o ID
@@ -258,25 +270,35 @@ export function LoadModelGLB(url, scale, position, rotation, callback) {
       model.scale.set(scale.x, scale.y, scale.z);
       model.position.set(position.x, position.y, position.z);
       model.rotation.set(rotation.x, rotation.y, rotation.z);
+
+      model.traverse((node) => {
+        if (node.isMesh) {
+          node.material = new THREE.MeshStandardMaterial({
+            color: node.material.color,
+            map: node.material.map,                    // Textura difusa
+            normalMap: node.material.normalMap,        // Normal map
+            roughnessMap: node.material.roughnessMap,  // Roughness map
+            metalnessMap: node.material.metalnessMap,  // Metalness map
+            emissiveMap: node.material.emissiveMap,    // Emissive map
+            roughness: 0.5,
+            metalness: 0.5
+        });
+
+            node.castShadow = true;    // O modelo projeta sombras
+            node.receiveShadow = true; // O modelo também pode receber sombras, se necessário
+        }
+    });
     }
-
-    // Criar AnimationMixer para gerenciar animações
-    const animator = new THREE.AnimationMixer(model);
     const animations = gltf.animations; 
-    
-  /*  // Adicionar as animações ao mixer
-    gltf.animations.forEach((clip) => {
-      animator.clipAction(clip).setLoop(THREE.LoopRepeat, Infinity);
-      animator.clipAction(clip).play(); // Reproduz a animação
-    });*/
 
+    console.log('Modelo:', gltf.scene);
     // Passar o modelo e o animator para o callback
-    callback(model, animator, animations);
+
+    callback(model, animations);
   }, undefined, (error) => {
     console.error('Erro ao carregar o modelo:', error);
   });
 }
-
 
 export function translate(object, axis, value) {
   if (value >= 0) {
@@ -347,6 +369,10 @@ export function getDelta() {
 
 export function getClock() {
   return clock;
+}
+
+export function getDeltaTime() {
+  return clock.getDelta();
 }
 
 // Vector3.js
@@ -494,6 +520,10 @@ export function loadTexture(name) {
   return texture;
 }
 
+export function cameraVector3(x, y, z) {
+  return new THREE.Vector3(x, y, z);
+}
+
 export class Environment {
   setHDR(path) {
       rgbeLoader.load(fileSystem.texture + '/' + path, (texture) => {
@@ -512,13 +542,34 @@ export class Environment {
   addDirectionalLight(color = 0xffffff, intensity = 1, position = [5, 10, 7.5]) {
       const light = new THREE.DirectionalLight(color, intensity);
       light.position.set(...position);
-      light.castShadow = true; // Habilita sombras
+      light.castShadow = true;  // Habilitar sombreamento na luz
+
+      // Tamanho do mapa de sombras para melhorar a qualidade
+      light.shadow.mapSize.width = 1024;
+      light.shadow.mapSize.height = 1024;
+      
+      // Definir os limites da câmera da sombra
+      light.shadow.camera.near = 0.5;
+      light.shadow.camera.far = 500;
+      light.shadow.camera.left = -10;
+      light.shadow.camera.right = 10;
+      light.shadow.camera.top = 10;
+      light.shadow.camera.bottom = -10;
+
+      light.shadow.bias = -0.0001;  // Pequeno valor negativo para resolver problemas de precisão
+
       scene.add(light);
       return light;
   }
 
   addAmbientLight(color = 0x404040, intensity = 1) {
       const light = new THREE.AmbientLight(color, intensity);
+      light.castShadow = true;
+      // Ajustes para a sombra da luz
+      light.shadow.mapSize.width = 1024; // Tamanho do mapa de sombras
+      light.shadow.mapSize.height = 1024;
+      light.shadow.camera.near = 0.5; // Distância mínima da sombra
+      light.shadow.camera.far = 500;  // Distância máxima da sombra
       scene.add(light);
       return light;
   }
@@ -612,6 +663,8 @@ export class Geometry {
     let boxGeometry = new THREE.BoxGeometry(width, height, depth);
     let material = new THREE.MeshBasicMaterial({ color: c });
     let box = new THREE.Mesh(boxGeometry, material);
+    box.castShadow = true;
+    box.receiveShadow = true;
 
     return box;
   }
@@ -620,6 +673,8 @@ export class Geometry {
     let cylinderGeometry = new THREE.CylinderGeometry(radiusTop, radiusBottom, height, radialSegments);
     let material = new THREE.MeshBasicMaterial({ color: c });
     let cylinder = new THREE.Mesh(cylinderGeometry, material);
+    cylinder.castShadow = true;
+    cylinder.receiveShadow = true;
 
     return cylinder;
   }
@@ -628,6 +683,8 @@ export class Geometry {
     let coneGeometry = new THREE.ConeGeometry(radius, height, radialSegments);
     let material = new THREE.MeshBasicMaterial({ color: c });
     let cone = new THREE.Mesh(coneGeometry, material);
+    cone.castShadow = true;
+    cone.receiveShadow = true;
 
     return cone;
   }
@@ -636,6 +693,8 @@ export class Geometry {
     let planeGeometry = new THREE.PlaneGeometry(width, height);
     let material = new THREE.MeshBasicMaterial({ color: c, side: THREE.DoubleSide });
     let plane = new THREE.Mesh(planeGeometry, material);
+    plane.castShadow = true;
+    plane.receiveShadow = true;
 
     return plane;
   }
@@ -644,6 +703,8 @@ export class Geometry {
     let torusGeometry = new THREE.TorusGeometry(radius, tube, radialSegments, tubularSegments);
     let material = new THREE.MeshBasicMaterial({ color: c });
     let torus = new THREE.Mesh(torusGeometry, material);
+    torus.castShadow = true;
+    torus.receiveShadow = true;
 
     return torus;
   }
@@ -793,4 +854,20 @@ export class Physics {
     world.addBody(object.body);
     return customBody;
   }
+}
+
+export class Animation {
+  createAnimator(model) {
+   const animator = new THREE.AnimationMixer(model.gameObject);
+   model.animator = animator;
+
+   return animator;
+ }
+
+ playAnimation(animator, animation) {
+   if (animation) {
+     const action = animator.clipAction(animation);
+     action.play();  // Toca a primeira animação
+   }
+ }
 }

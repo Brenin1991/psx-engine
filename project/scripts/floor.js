@@ -10,6 +10,8 @@ const geometry = new Geometry()
 let floorModel;
 let floorObject;
 
+let floorPhysic;
+
 let planeModel;
 let planeObj;
 
@@ -22,14 +24,16 @@ export function gameStart() {
     }
   });
 
-  //let planeModel = geometry.createBox(100, 1, 100, 0xffa500);
-  //let planeObj = PSX.instantiate(planeModel, 'plane');
-  //planeObj.gameObject.rotation.x = -Math.PI / 2; 
-  //physics.addBoxPhysics(planeObj.gameObject,100, 1, 100, 0);
+  let planeObj = PSX.instantiate(geometry.createBox(100, 1, 100, 0xffa500), 'plane');
+  planeObj.gameObject.visible = false; // Torna o objeto invisível
+  planeObj.gameObject.rotation.x = -Math.PI / 2; 
+  floorPhysic = physics.addBoxPhysics(planeObj.gameObject,100, 1, 100, 0);
+  floorPhysic.friction = 0; // Atrito zero
 }
 
 export function gameLoop() {
   if(floorObject) {
+    floorPhysic.friction = 0; // Atrito zero
     moveFloor();
   }
 }
@@ -39,7 +43,7 @@ function loadModel() {
   const position = new Vector3(0, 0, 0);
   const rotation = new Vector3(0, 0, 0);
 
-  PSX.LoadModelGLB('01.glb', scale, position, rotation, (loadedModel, animator, animations) => {
+  PSX.LoadModelGLB('01.glb', scale, position, rotation, (loadedModel) => {
       floorModel = loadedModel;
       floorObject = PSX.instantiate(floorModel, 'floor');
       console.log(floorObject.getSceneId()); // Acessa o ID
