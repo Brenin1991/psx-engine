@@ -20,7 +20,7 @@ import * as CANNON from 'cannon-es';
 import { World, Body, Box, Sphere, Vec3 } from 'cannon-es'; // Cannon.js
 
 // Variáveis globais do engine
-let scene, camera, renderer, composer, renderPass, fxaaPass, listener, world;
+let scene, camera, renderer, composer, renderPass, fxaaPass, listener, world, clock, delta;
 let gameStartFunction = null; // Variável para armazenar o callback do gameStart
 let gameLoopFunction = null; // Variável para armazenar o callback do gameLoop
 const modelLoader = new GLTFLoader();
@@ -78,6 +78,9 @@ export function init() {
     gameStartFunction(); // Chama o loop do jogo a cada frame
   }
 
+  // Variável global para o relógio
+  clock = new THREE.Clock();
+
   function animate() {
     requestAnimationFrame(animate);
 
@@ -85,6 +88,8 @@ export function init() {
     if (gameLoopFunction) {
       gameLoopFunction(); // Chama o loop do jogo a cada frame
     }
+
+    delta = clock.getDelta(); // Calcular o tempo delta
 
     // Atualizar a física com um deltaTime (exemplo: 1/60 para 60 fps)
     const deltaTime = 1 / 60;
@@ -248,17 +253,30 @@ export function LoadModelGLB(url, scale, position, rotation, callback) {
   modelLoader.load(fileSystem.models + "/" + url, (gltf) => {
     const model = gltf.scene;
 
+    // Configurar escala, posição e rotação
     if (model instanceof THREE.Object3D) {
       model.scale.set(scale.x, scale.y, scale.z);
       model.position.set(position.x, position.y, position.z);
       model.rotation.set(rotation.x, rotation.y, rotation.z);
     }
 
-    callback(model);
+    // Criar AnimationMixer para gerenciar animações
+    const animator = new THREE.AnimationMixer(model);
+    const animations = gltf.animations; 
+    
+  /*  // Adicionar as animações ao mixer
+    gltf.animations.forEach((clip) => {
+      animator.clipAction(clip).setLoop(THREE.LoopRepeat, Infinity);
+      animator.clipAction(clip).play(); // Reproduz a animação
+    });*/
+
+    // Passar o modelo e o animator para o callback
+    callback(model, animator, animations);
   }, undefined, (error) => {
     console.error('Erro ao carregar o modelo:', error);
   });
 }
+
 
 export function translate(object, axis, value) {
   if (value >= 0) {
@@ -321,6 +339,14 @@ export function getCamera() {
 
 export function getRenderer() {
   return renderer;
+}
+
+export function getDelta() {
+  return delta;
+}
+
+export function getClock() {
+  return clock;
 }
 
 // Vector3.js

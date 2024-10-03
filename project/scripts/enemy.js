@@ -29,7 +29,7 @@ function loadModel() {
     new Vector3(4, 4, 4),
     new Vector3(0, 0, 0),
     new Vector3(0, 0, 0),
-    (loadedModel) => {
+    (loadedModel, animator, animations) => {
       tankModel = loadedModel;
     }
   );
@@ -39,7 +39,7 @@ function loadModel() {
     new Vector3(0.01, 0.01, 0.01),
     new Vector3(0, 0, 0),
     new Vector3(0, 0, 0),
-    (loadedModel) => {
+    (loadedModel, animator, animations) => {
       helicopterModel = loadedModel;
     }
   );

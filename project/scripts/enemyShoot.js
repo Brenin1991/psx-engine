@@ -27,7 +27,7 @@ function loadModel() {
     scale,
     position,
     rotation,
-    (loadedModel) => {
+    (loadedModel, animator, animations) => {
       missile = loadedModel;
     }
   );

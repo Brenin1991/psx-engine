@@ -12,8 +12,17 @@ let playerModel;
 let playerObject;
 let playerPhysics;
 
+let my_animator, my_animations;
+
+let clock, delta;
+
 // Função gameStart atualizada para encontrar o player no início
 export function gameStart() {
+  initializeWithRetry(() => {
+    //loadModel();
+  });
+  
+  
   PSX.findObjectByName('player', (foundObject) => {
     if (foundObject) {
       console.log('Player encontrado no gameStart.');
@@ -33,26 +42,53 @@ export function gameStart() {
 
 // Função gameLoop que só controla o player se ele já foi inicializado no gameStart
 export function gameLoop() {
+  /*delta = PSX.getDelta();
+  my_animations.forEach((clip) => {
+    //animator.clipAction(clip).setLoop(THREE.LoopRepeat, Infinity);
+    console.log(clip.name);
+   my_animator.clipAction(clip).play(); // Reproduz a animação
+  });
+  
+  if(playerObject) {
+    my_animator.update(delta); // Atualiza todas as animações ativas
+    console.log(delta);
+  }*/
   //playerObject.gameObject.position.copy(playerPhysics.position);
   //playerObject.gameObject.quaternion.copy(playerPhysics.quaternion);
 }
 
 // Função para carregar o modelo do player (caso precise usar isso no futuro)
 function loadModel() {
-  const scale = new Vector3(0.01, 0.01, 0.01);
+  const scale = new Vector3(0.1, 0.1, 0.1);
   const position = new Vector3(0, 0, 0);
   const rotation = new Vector3(0, Math.PI, 0);
 
   PSX.LoadModelGLB(
-    "f16.glb",
+    "book.glb",
     scale,
     position,
     rotation,
-    (loadedModel) => {
+    (loadedModel, animator, animations) => {
       playerModel = loadedModel;
       playerObject = PSX.instantiate(playerModel, 'player');
       playerObject.addComponent('playerShoot', playerShoot);
       gameManager.setUpPlayer(playerObject);
+
+      my_animator = animator;
+      my_animations = animations;
+
+      my_animations.forEach((clip) => {
+        //animator.clipAction(clip).setLoop(THREE.LoopRepeat, Infinity);
+        console.log(clip.name);
+       my_animator.clipAction(clip).play(); // Reproduz a animação
+      });
+/*
+      const animationNames = animations.map(clip => clip.name); // Coletar nomes das animações
+       // Selecionar uma animação para começar
+      const selectedAnimation = animationNames[0]; // Aqui escolhemos a primeira animação como exemplo
+      const action = animator.clipAction(selectedAnimation);
+      action.setLoop(THREE.LoopRepeat, Infinity); // LoopRepeat é o modo e Infinity significa que irá repetir indefinidamente
+      action.play(); // Reproduz a animação*/
     }
   );
 }
