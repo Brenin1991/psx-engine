@@ -97,9 +97,15 @@ export function inputs() {
         player.components.playerShoot();
       }
 
-      if (gp.buttons[1].pressed) {
+      
+
+      if (gp.buttons[5].pressed) {
         player.components.playerJump();
-      } else {
+      } 
+      if (gp.buttons[4].pressed) {
+        player.physics.velocity.y = -15;
+      }
+      else {
         if(player.physics.position.y <= 5) {
           player.physics.position.y = 5;
         }

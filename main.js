@@ -14,7 +14,7 @@ function createWindow() {
     }
   });
 
-  win.loadFile('project/index.html').then(() => {
+  win.loadFile('project/editor.html').then(() => {
     win.webContents.openDevTools();
   });
 }

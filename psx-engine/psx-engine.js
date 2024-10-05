@@ -15,9 +15,12 @@ import { TexturePass } from 'three/examples/jsm/postprocessing/TexturePass.js';
 import { VignetteShader } from 'three/examples/jsm/shaders/VignetteShader.js';
 import { ColorCorrectionShader } from 'three/examples/jsm/shaders/ColorCorrectionShader.js';
 
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js';
+
 import * as CANNON from 'cannon-es';
 import { World, Body, Box, Sphere, Vec3 } from 'cannon-es'; // Cannon.js
+
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 // Variáveis globais do engine
 let scene, camera, renderer, composer, renderPass, fxaaPass, listener, world, clock, delta;
@@ -42,6 +45,8 @@ let timeMulti = 1;
 let sceneObjects = [];
 let prefabs = [];
 
+let transformControls, gizmo;
+
 // Inicializa a cena, câmera e renderizador
 export function init() {
   scene = new THREE.Scene();
@@ -50,6 +55,9 @@ export function init() {
 
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
+
+  raycaster = new THREE.Raycaster();
+   mouse = new THREE.Vector2();
 
   composer = new EffectComposer(renderer);
   renderPass = new RenderPass(scene, camera);
@@ -115,6 +123,11 @@ export function init() {
     renderer.precision = 'lowp'
     
     renderer.render(scene, camera);
+    if(transformControls && gizmo) {
+      transformControls.update(); // Atualiza o gizmo
+      gizmo.position.copy(transformControls.object.position);
+    }
+    
   }
 
   animate();
@@ -871,3 +884,70 @@ export class Animation {
    }
  }
 }
+
+////////////////////editor////////////////////
+
+let controls;
+export function getEditorCamera() {
+  camera.position.set(0, 0, 5);
+  controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true; // Efeito de amortecimento
+
+  return controls;
+}
+
+let raycaster, mouse;
+
+export function transformControl() {
+  transformControls = new TransformControls(camera, renderer.domElement);
+  transformControls.renderOrder = 10; // Defina um valor alto para renderizar na frente
+  scene.add(transformControls);
+  scene.add(new THREE.AxesHelper(5))
+
+  gizmo = transformControls.getHelper();
+	scene.add( gizmo );
+
+  return transformControls;
+}
+
+window.addEventListener('click', (event) => {
+  if (transformControls) {
+      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObjects(scene.children, true); // O segundo parâmetro verifica filhos
+
+      
+      if (intersects.length > 0) {
+          const selectedObject = intersects[0].object;
+          let objectToAttach = selectedObject;
+
+          // Se o objeto selecionado for uma Mesh, pegue seu pai
+          if (selectedObject instanceof THREE.Mesh) {
+              objectToAttach = selectedObject.parent; // Pega o pai
+              console.log(objectToAttach);
+          }
+
+          // Verifica se o objeto pai é um Group ou Mesh
+          if (objectToAttach instanceof THREE.Group) {
+              transformControls.attach(objectToAttach); // Anexa o pai
+              gizmo.visible = true; // Torna o gizmo visível
+              controls.enabled = false; 
+          }
+      } else {
+          transformControls.detach();
+          gizmo.visible = false; // Esconde o gizmo
+          controls.enabled = true; 
+      }
+  }
+});
+
+
+window.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') {
+      transformControls.detach(); // Desanexa o objeto
+      gizmo.visible = false; // Esconde o gizmo
+      controls.enabled = true; // Reativa os controles de orbit
+  }
+});
