@@ -5,8 +5,8 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 // Função para criar a janela
 function createWindow() {
   const win = new BrowserWindow({
-    fullscreen: true,
-    frame: false,
+    fullscreen: false,
+    frame: true,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,

@@ -6,18 +6,18 @@ let sceneLoad;
 
 async function start() {
   
-  PSX.init(); // Inicializa a engine
+  //PSX.init(); // Inicializa a engine
 
   // Um delay aqui, por exemplo 5 segundos (5000 milissegundos)
-  await delay(5000);
+  await delay(20000);
   
   // Carregar o projeto e esperar que o carregamento finalize antes de continuar
-  await loadProject();
+  //await loadProject();
 
   console.log('Projeto carregado com sucesso, iniciando gameStart.');
   
-  PSX.setGameStart(gameStart);
-  PSX.setGameLoop(gameLoop);
+  PSX.setEditorGameStart(gameStart);
+  PSX.setEditorGameLoop(gameLoop);
   // Inicia o gameStart após o projeto ser carregado
   await gameStart();
 

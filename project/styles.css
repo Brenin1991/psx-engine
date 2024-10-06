@@ -1,0 +1,167 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #2e2e2e; /* Cor de fundo semelhante ao Unity */
+    color: white;
+}
+
+.container {
+    display: flex;
+    flex-direction: column; /* Muda a direção do layout para coluna */
+    height: calc(100vh - 20px); /* Ajusta a altura do container */
+    margin: 10px; /* Margem ao redor do container */
+}
+
+canvas {
+    width: 640px; /* Largura fixa para os canvases */
+    height: 480px; /* Altura fixa para os canvases */
+    background-color: #1c1c1c; /* Cor de fundo do canvas */
+    border: 1px solid #444; /* Borda do canvas */
+    border-radius: 8px; /* Bordas arredondadas */
+    margin-bottom: 10px; /* Espaçamento entre os canvases */
+    z-index: 50;
+}
+
+
+.sidebar, .file-explorer, .inspector {
+    width: 250px; /* Largura fixa */
+    background-color: #3c3c3c; /* Cor de fundo */
+    padding: 10px;
+    overflow-y: auto; /* Permite rolagem se necessário */
+    margin-right: 10px; /* Espaçamento à direita */
+    border-radius: 8px; /* Bordas arredondadas */
+}
+
+.inspector {
+    margin-right: 0; /* Remove margem da última div */
+}
+
+h2 {
+    margin: 0 0 10px 0; /* Margem inferior para títulos */
+}
+
+.slider {
+    width: 100%;
+    background-color: #3c3c3c; /* Cor de fundo da barra do slide */
+    border-radius: 8px; /* Bordas arredondadas */
+    padding: 10px;
+    margin-bottom: 10px; /* Espaçamento abaixo da barra do slide */
+}
+
+.slider input[type="range"] {
+    width: 100%;
+    background-color: #5a5a5a; /* Cor de fundo do slider */
+    border: none;
+    border-radius: 4px; /* Bordas arredondadas */
+    cursor: pointer;
+}
+
+.overlay-button {
+    position: absolute; /* Sobreposição sobre o canvas */
+    background-color: #5a5a5a; /* Cor de fundo dos botões */
+    border: none;
+    border-radius: 4px; /* Bordas arredondadas */
+    color: white;
+    cursor: pointer;
+    padding: 10px;
+    margin: 5px;
+    transition: background-color 0.3s;
+    z-index: 52;
+}
+
+#translateButton { top: 10px; left: 10px; }
+#rotateButton { top: 10px; left: 100px; }
+#scaleButton { top: 10px; left: 200px; }
+
+.overlay-button:hover {
+    background-color: #777; /* Cor de fundo ao passar o mouse */
+}
+
+label {
+    margin-top: 10px;
+    color: white; /* Cor do texto */
+}
+
+input[type="text"] {
+    width: calc(100% - 20px); /* Largura do input, com margens */
+    margin-top: 5px;
+    padding: 5px;
+    border: none;
+    border-radius: 4px; /* Bordas arredondadas */
+    background-color: #5a5a5a; /* Cor de fundo do input */
+    color: white; /* Cor do texto */
+}
+
+.scene-object-button {
+    margin: 5px 0; /* Margem entre botões */
+    padding: 10px; /* Espaçamento interno dos botões */
+    background-color: #5a5a5a; /* Cor de fundo dos botões */
+    border: none;
+    border-radius: 4px; /* Bordas arredondadas */
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    text-align: left; /* Alinhamento do texto à esquerda */
+    width: 100%; /* Faz os botões ocuparem toda a largura da sidebar */
+}
+
+.scene-object-button:hover {
+    background-color: #777; /* Cor de fundo ao passar o mouse */
+}
+
+.scene-object-button.selected {
+    background-color: #4CAF50; /* Cor de fundo quando o botão está selecionado */
+    color: white; /* Cor do texto (opcional) */
+}
+
+.input-row {
+    display: flex; /* Usar flexbox para alinhar inputs lado a lado */
+    margin-bottom: 10px; /* Espaço entre as linhas */
+}
+
+.input-row input {
+    width: 60px; /* Largura fixa para os inputs */
+    margin-right: 5px; /* Espaço entre os inputs */
+    flex: none; /* Impede que o flexbox altere o tamanho dos inputs */
+    padding: 5px; /* Espaçamento interno dos inputs */
+    border: 1px solid #555; /* Borda dos inputs */
+    border-radius: 3px; /* Bordas arredondadas dos inputs */
+    background-color: #5a5a5a; /* Cor de fundo dos inputs */
+    color: white; /* Cor do texto dos inputs */
+}
+
+.input-row input:last-child {
+    margin-right: 0; /* Remove a margem do último input */
+}
+
+label {
+    margin-top: 10px;
+    color: white; /* Cor do texto */
+}
+
+.right-sidebar {
+    position: fixed; /* Fixa a div na tela */
+    top: 0; /* Alinha ao topo */
+    right: 0; /* Alinha à direita */
+    width: 60%; /* Largura fixa */
+    background-color: #3c3c3c; /* Cor de fundo */
+    padding: 10px; /* Espaçamento interno */
+    height: 100%; /* Ocupa toda a altura da tela */
+    overflow-y: auto; /* Permite rolagem se necessário */
+    border-radius: 8px; /* Bordas arredondadas */
+    z-index: 2; /* Garante que esteja acima de outros elementos */
+    display: flex; /* Usar flexbox */
+    flex-direction: row; /* Alinha os elementos em linha */
+    gap: 10px; /* Espaçamento entre os itens */
+}
+
+.sidebar, .file-explorer, .inspector {
+    flex: 1; /* Permite que as seções ocupem espaço igual */
+    border-radius: 5px; /* Bordas arredondadas nas seções */
+    padding: 10px; /* Espaçamento interno nas seções */
+    background-color: #4a4a4a; /* Cor de fundo das seções */
+}

@@ -3,13 +3,60 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Three.js Electron App</title>
+  <title>Three.js Editor Style</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <script type="module" src="engine/psx-engine-dist.js"></script> <!-- O script compilado -->
-    <script type="module" src="engine/core-editor.js"></script> <!-- O script não compilado -->
-    <button id="translateButton">Mover</button>
-    <button id="rotateButton">Rotacionar</button>
-    <button id="scaleButton">Escalonar</button>
+  <div class="container">
+    <canvas id="gameCanvas" width="640" height="480"></canvas>
+    <canvas id="editorCanvas" width="640" height="480"></canvas> <!-- Canvas do editor -->
+    
+    <div class="right-sidebar">
+      <div class="sidebar">
+          <h2>Scene Objects</h2>
+          <div id="sceneObjectsContainer"></div>
+      </div>
+  
+      <div class="file-explorer">
+          <h2>File Explorer</h2>
+          <div id="fileListContainer"></div>
+      </div>
+  
+      <div class="inspector">
+          <h2>Inspector</h2>
+          <button id="addComponentButton">Add Component</button>
+          <div id="transformProperties">
+              <h3>Transform</h3>
+              <label>Position:</label>
+              <div class="input-row">
+                  <input type="number" id="positionX" placeholder="x">
+                  <input type="number" id="positionY" placeholder="y">
+                  <input type="number" id="positionZ" placeholder="z">
+              </div>
+              <label>Rotation:</label>
+              <div class="input-row">
+                  <input type="number" id="rotationX" placeholder="x">
+                  <input type="number" id="rotationY" placeholder="y">
+                  <input type="number" id="rotationZ" placeholder="z">
+              </div>
+              <label>Scale:</label>
+              <div class="input-row">
+                  <input type="number" id="scaleX" placeholder="x">
+                  <input type="number" id="scaleY" placeholder="y">
+                  <input type="number" id="scaleZ" placeholder="z">
+              </div>
+          </div>
+      </div>
+    </div>
+  </div>
+  
+  <button id="translateButton" class="overlay-button">Mover</button>
+  <button id="rotateButton" class="overlay-button">Rotacionar</button>
+  <button id="scaleButton" class="overlay-button">Escalonar</button>
+
+  <!-- Mova os scripts para o final do body -->
+  <script type="module" src="engine/psx-engine-dist.js"></script>
+  <script type="module" src="engine/core-editor.js"></script>
+  <script type="module" src="engine/core.js"></script> <!-- O script não compilado -->
 </body>
 </html>

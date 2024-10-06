@@ -3,6 +3,8 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 
+import Stats from 'stats.js';
+
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
@@ -23,11 +25,19 @@ import { World, Body, Box, Sphere, Vec3 } from 'cannon-es'; // Cannon.js
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 // Variáveis globais do engine
-let scene, camera, renderer, composer, renderPass, fxaaPass, listener, world, clock, delta;
+let scene, camera, editorCamera, renderer, editorRenderer, composer, renderPass, fxaaPass, listener, world, clock, delta, canvas, editorCanvas;
 let gameStartFunction = null; // Variável para armazenar o callback do gameStart
 let gameLoopFunction = null; // Variável para armazenar o callback do gameLoop
+
+let editorGameStartFunction = null; // Variável para armazenar o callback do gameStart
+let editorGameLoopFunction = null; // Variável para armazenar o callback do gameLoop
 const modelLoader = new GLTFLoader();
 const keysPressed = {}; // Armazena o estado das teclas pressionadas
+
+// Criação do Stats.js
+const stats = new Stats();
+stats.showPanel(0); // 0: FPS, 1: ms, 2: memória
+document.body.appendChild(stats.dom);
 
 // loaders
 const rgbeLoader = new RGBELoader();
@@ -47,14 +57,70 @@ let prefabs = [];
 
 let transformControls, gizmo;
 
+function setUpRenderer() {
+  // Cena
+  scene = new THREE.Scene();
+  
+  // Câmera principal do jogo
+  camera = new THREE.PerspectiveCamera(60, 640 / 480, 0.1, 300);
+  camera.position.set(0, 3, 7);
+  
+  canvas = document.getElementById("gameCanvas");
+  renderer = new THREE.WebGLRenderer({
+    canvas,
+    /*antialias: false, // Suaviza as bordas dos objetos
+    stencil: false,
+    depth: false,
+    powerPreference: "high-performance", // Melhor desempenho gráfico
+    alpha: true, // Se necessário para transparência do fundo
+    precision: "highp", // Alta precisão nos shaders
+    physicallyCorrectLights: true,
+    outputEncoding: THREE.GammaEncoding,
+    logarithmicDepthBuffer: false,*/
+  });
+  //renderer.setSize(640, 480);
+  //renderer.toneMapping = THREE.ACESFilmicToneMapping;
+ // renderer.toneMappingExposure = 2;
+}
+
+export function setUpEditor() {
+  const editorCanvas = document.getElementById("editorCanvas");
+  
+  if (!editorCanvas) {
+    console.error("O canvas do editor não foi encontrado!");
+    return;
+  }
+  
+  editorRenderer = new THREE.WebGLRenderer({
+    canvas: editorCanvas,
+  });
+  editorRenderer.setSize(640, 480);
+  
+  // Configuração da câmera do editor
+  editorCamera = new THREE.PerspectiveCamera(60, 640 / 480, 0.1, 1000);
+  editorCamera.position.set(0, 5, 10); // Ajuste conforme necessário
+  editorCamera.lookAt(0, 0, 0); // Olhe para o centro da cena
+  
+  // Adicione a cena e outros objetos que deseja renderizar no editor aqui
+
+  // Configurar controles
+  controls = new OrbitControls(editorCamera, editorCanvas);
+  controls.enableDamping = true; // Efeito de amortecimento
+  controls.dampingFactor = 0.25; // Fator de amortecimento
+
+  transformControls = new TransformControls(editorCamera, editorCanvas);
+  transformControls.renderOrder = 50; // Defina um valor alto para renderizar na frente
+  scene.add(transformControls);
+  scene.add(new THREE.AxesHelper(5))
+
+  gizmo = transformControls.getHelper();
+	scene.add( gizmo );
+
+}
 // Inicializa a cena, câmera e renderizador
 export function init() {
-  scene = new THREE.Scene();
-  camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-  renderer = new THREE.WebGLRenderer();
-
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  document.body.appendChild(renderer.domElement);
+  setUpRenderer();
+ // setUpEditor();
 
   raycaster = new THREE.Raycaster();
    mouse = new THREE.Vector2();
@@ -86,17 +152,24 @@ export function init() {
     gameStartFunction(); // Chama o loop do jogo a cada frame
   }
 
+  if(editorGameStartFunction) {
+    editorGameStartFunction();
+  }
+
   // Variável global para o relógio
   clock = new THREE.Clock();
 
   function animate() {
-    requestAnimationFrame(animate);
-
+    stats.begin(); // Inicia a medição
     delta = clock.getDelta(); // Calcular o tempo delta
 
     // Executa a função gameLoop() se ela foi definida
     if (gameLoopFunction) {
       gameLoopFunction(); // Chama o loop do jogo a cada frame
+    }
+
+    if (editorGameLoopFunction) {
+      editorGameLoopFunction(); // Chama o loop do jogo a cada frame
     }
 
     // Atualizar a física com um deltaTime (exemplo: 1/60 para 60 fps)
@@ -112,22 +185,22 @@ export function init() {
       }
     });
     
+    if (editorRenderer && editorCamera) {
+      editorRenderer.render(scene, editorCamera);
+      if (controls) {
+        controls.update(); // Atualiza os controles
+      }
 
-    renderer.shadowMap.enabled = true;
-    //enviroment
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.outputEncoding = THREE.sRGBEncoding;
-    renderer.toneMappingExposure = 1.0;  // Ajuste a exposição conforme necessário
-    renderer.antialias = true
-    renderer.powerPreference = 'high-performance'
-    renderer.precision = 'lowp'
-    
-    renderer.render(scene, camera);
-    if(transformControls && gizmo) {
-      transformControls.update(); // Atualiza o gizmo
-      gizmo.position.copy(transformControls.object.position);
+      if(transformControls && gizmo) {
+        transformControls.update(); // Atualiza o gizmo
+        if(attachObject) {
+          gizmo.position.copy(transformControls.object.position);
+        }
+      }
     }
-    
+    renderer.render(scene, camera);
+    stats.end(); // Inicia a medição
+    requestAnimationFrame(animate);
   }
 
   animate();
@@ -361,6 +434,14 @@ export function setGameLoop(callback) {
 
 export function setGameStart(callback) {
   gameStartFunction = callback; // Define o callback do loop de jogo
+}
+
+export function setEditorGameLoop(callback) {
+  editorGameLoopFunction = callback; // Define o callback do loop de jogo
+}
+
+export function setEditorGameStart(callback) {
+  editorGameStartFunction = callback; // Define o callback do loop de jogo
 }
 
 // Retorna a cena, câmera e renderizador (se necessário)
@@ -889,27 +970,28 @@ export class Animation {
 
 let controls;
 export function getEditorCamera() {
-  camera.position.set(0, 0, 5);
-  controls = new OrbitControls(camera, renderer.domElement);
+  /*editorCamera.position.set(0, 0, 5);
+  controls = new OrbitControls(editorCamera, editorCanvas);
   controls.enableDamping = true; // Efeito de amortecimento
-
+  */
   return controls;
 }
 
 let raycaster, mouse;
 
 export function transformControl() {
-  transformControls = new TransformControls(camera, renderer.domElement);
-  transformControls.renderOrder = 10; // Defina um valor alto para renderizar na frente
-  scene.add(transformControls);
-  scene.add(new THREE.AxesHelper(5))
-
-  gizmo = transformControls.getHelper();
-	scene.add( gizmo );
-
   return transformControls;
 }
 
+let attachObject;
+export function setAttach(gameObject) {
+  attachObject = gameObject;
+  transformControls.attach(gameObject); // Anexa o pai
+  gizmo.visible = true; // Torna o gizmo visível
+  controls.enabled = false; 
+}
+
+/*
 window.addEventListener('click', (event) => {
   if (transformControls) {
       mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
@@ -941,13 +1023,20 @@ window.addEventListener('click', (event) => {
           controls.enabled = true; 
       }
   }
-});
+});*/
 
 
 window.addEventListener('keydown', (event) => {
   if (event.key === 'Escape') {
+      attachObject = null;
       transformControls.detach(); // Desanexa o objeto
       gizmo.visible = false; // Esconde o gizmo
       controls.enabled = true; // Reativa os controles de orbit
   }
 });
+
+export function returnSceneObjectsList() {
+
+  return sceneObjects;
+}
+
